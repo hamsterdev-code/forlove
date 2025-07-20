@@ -7,7 +7,7 @@ from datetime import datetime
 from handlers.handler import ref_handler
 
 
-ADMIN_ACCOUNT = 
+ADMIN_ACCOUNT = 6062822304
 
 def handler_callback(bot: TeleBot, call: types.CallbackQuery):
     with Session(engine) as session:
