@@ -4,7 +4,7 @@ WORKDIR /
 # copy project
 COPY . .
 # install dependencies
-RUN pip install pytelegrambotapi sqlalchemy
+RUN pip install pytelegrambotapi sqlalchemy pymysql
 
 EXPOSE 80
 # run app
