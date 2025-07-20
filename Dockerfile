@@ -8,4 +8,4 @@ RUN pip install pytelegrambotapi sqlalchemy
 
 EXPOSE 80
 # run app
-CMD ["python", "main.py"]
+CMD ["python", "bot.py"]
