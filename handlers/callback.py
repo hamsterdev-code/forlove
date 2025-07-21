@@ -11,6 +11,7 @@ from handlers.handler import ref_handler
 ADMIN_ACCOUNT = 6062822304
 
 
+
 def handler_callback(bot: TeleBot, call: types.CallbackQuery):
     with Session(engine) as session:
         user = session.execute(select(User).where(User.tg_id == call.from_user.id)).scalar() # call.from_user.id
@@ -29,7 +30,7 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             markup.add(button)
             bot.send_message(call.from_user.id, """        
 Будьте в курсе всех новостей и событий проекта 'За любовь'! 
-
+ 
 Подписывайтесь на наши социальные сети, чтобы следить за анонсами мероприятий, вдохновляющими историями участников и полезными материалами. 
 Мы делимся видео, статьями и отзывами, чтобы вы чувствовали себя частью нашего сообщества!
     """, reply_markup=markup)
@@ -44,7 +45,7 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
         elif call.data == "about_game":
             bot.send_message(call.from_user.id, """
 Игра 'За любовь' создана для 1–12 участников и подходит для людей любого возраста, которые хотят лучше понять себя и других. 
-
+ 
 В комплект входят карточки с глубокими вопросами, заданиями и сценариями, которые помогают раскрыться, обсудить ценности и выстроить доверие. 
 Это идеальный способ начать свое путешествие в экосистеме 'За любовь'. Узнайте, как игра может изменить ваш взгляд на отношения!""")
         elif call.data == "our_cities":
