@@ -19,7 +19,7 @@ def handle_start_message(bot: TeleBot, chat_id: int):
     button6 = types.InlineKeyboardButton("Наши продукты", callback_data="our_products")   
     
     markup.add(button1, button2, button3, button6, button5, button4, row_width=2)
-    button8 = types.InlineKeyboardButton("Вопросы и поддержка", callback_data="!!!")   
+    button8 = types.InlineKeyboardButton("Вопросы и поддержка", callback_data="support")   
     button7 = types.InlineKeyboardButton("Рефералка и баланс", callback_data="ref_program")   
 
     markup.add(button7, button8, row_width=1)

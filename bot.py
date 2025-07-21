@@ -4,7 +4,7 @@ from db.models import init_db
 from handlers.start import handle_start_message, handler_start
 from handlers.callback import handler_callback
 
-bot = TeleBot("7713812500:AAFBkZRpgYKbatoUkj0N-niA-5nXbYWZOJg")
+bot = TeleBot("7713812500:AAFBkZRpgYKbatoUkj0N-niA-5nXbYWZOJg") # #8069804675:AAHzP45sHeYCVG_6X1TYjU5YbfUhD0rXZVc
 
 @bot.message_handler(commands=['start'])
 def start_handler(message):

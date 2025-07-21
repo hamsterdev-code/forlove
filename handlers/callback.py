@@ -1,6 +1,7 @@
 from sqlalchemy import select, and_
 from telebot import TeleBot, types
 from sqlalchemy.orm import Session
+from yoomoney import Authorize, Client, Quickpay
 from db.connect import engine
 from db.models import City, PayMetadata, Schedule, User
 from datetime import datetime
@@ -8,6 +9,7 @@ from handlers.handler import ref_handler
 
 
 ADMIN_ACCOUNT = 6062822304
+
 
 def handler_callback(bot: TeleBot, call: types.CallbackQuery):
     with Session(engine) as session:
@@ -74,7 +76,7 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             price = call.data.split("_")[2]
             
             pay_metadata = PayMetadata(
-                user_id = user.id,
+            user_id = user.id, 
                 price = price,
                 product = f"subscribe-{months}",
                 procent_balance = 50,
@@ -84,8 +86,17 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             session.add(pay_metadata)
             session.commit()
             
-            markup = types.InlineKeyboardMarkup()    
-            button = types.InlineKeyboardButton(f"Оплатить ({price} ₽)", callback_data="_subscribe-send_forlove")
+            quickpay = Quickpay(
+                receiver="4100119236552041",
+                quickpay_form="shop",
+                targets="Sponsor this project",
+                paymentType="SB",
+                sum=int(price),
+                label=pay_metadata.id
+            )
+            
+            markup = types.InlineKeyboardMarkup()
+            button = types.InlineKeyboardButton(f"Оплатить ({price} ₽)", url=quickpay.redirected_url)
             button2 = types.InlineKeyboardButton(f"Проверить оплату", callback_data=f"check-buy-subscribe_{pay_metadata.id}")
             markup.add(button, button2, row_width=2)
             
@@ -94,10 +105,15 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
 После оплаты ОБЯЗАТЕЛЬНО нажмите кнопку "Проверить оплату", иначе ваша покупка не зафиксируется                    
                              """, reply_markup=markup)
         elif call.data.startswith("check-buy-subscribe"):
-            payed =  False# функция проверки оплаты
+            pay_metadata_id = int(call.data.split('_')[1])
+            client = Client("4100119236552041.62F531CC6CF1B5DBC00C5D38439C9ADF529D86C6E59F50507F0BCCF28A08A81561341999C0A80BA151B9EDA7D1BC45B6A60F4F2288D7315C2E42ABD29953788F11DB5746B31547AD6B2AE7A9DDAEBD835994DC7827D7403FC3E43E6252E78C7FFF1D03B3026251118E1DEB4E3ACC0427DF9F8AC976A380DA9CF640518CFC5D3D")
+            history = client.operation_history(label=pay_metadata_id)
+            if len(history.operations) > 0 and history.operations[0].status == "success":
+                payed = True
+            else: payed = False
             
             if payed:
-                pay_metadata = session.execute(select(PayMetadata).where(PayMetadata.id == int(call.data.split('_')[1]))).scalar()
+                pay_metadata = session.execute(select(PayMetadata).where(PayMetadata.id == pay_metadata_id)).scalar()
                 if pay_metadata.has_payed == True:
                     bot.send_message(call.from_user.id, "Оплата уже проверена")
                 pay_metadata.has_payed = True
@@ -162,8 +178,17 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             session.add(pay_metadata)
             session.commit()
             
+            quickpay = Quickpay(
+                receiver="4100119236552041",
+                quickpay_form="shop",
+                targets="Sponsor this project",
+                paymentType="SB",
+                sum=int(price),
+                label=pay_metadata.id
+            )
+            
             markup = types.InlineKeyboardMarkup()    
-            button = types.InlineKeyboardButton(f"Оплатить ({price} ₽)", callback_data="_buy-product_forlove")
+            button = types.InlineKeyboardButton(f"Оплатить ({price} ₽)", url=quickpay.redirected_url)
             button2 = types.InlineKeyboardButton(f"Проверить оплату", callback_data=f"check-buy-product_{pay_metadata.id}")
             markup.add(button, button2, row_width=2)
             
@@ -203,7 +228,11 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
         elif call.data == "_buy-product_forlove":
             bot.send_message(call.from_user.id, "Для получения реквизитов напишите основателю проекта: @Forlove2025")
         elif call.data.startswith("check-buy-product"):
-            payed = False # функция проверки оплаты
+            client = Client("4100119236552041.62F531CC6CF1B5DBC00C5D38439C9ADF529D86C6E59F50507F0BCCF28A08A81561341999C0A80BA151B9EDA7D1BC45B6A60F4F2288D7315C2E42ABD29953788F11DB5746B31547AD6B2AE7A9DDAEBD835994DC7827D7403FC3E43E6252E78C7FFF1D03B3026251118E1DEB4E3ACC0427DF9F8AC976A380DA9CF640518CFC5D3D")
+            history = client.operation_history(label=pay_metadata_id)
+            if len(history.operations) > 0 and history.operations[0].status == "success":
+                payed = True
+            else: payed = False
             
             if payed:
                 pay_metadata = session.execute(select(PayMetadata).where(PayMetadata.id == int(call.data.split('_')[1]))).scalar()
@@ -338,4 +367,22 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
         elif call.data == "return_balance":
             bot.send_message(call.from_user.id, "Для более подробной информации напишите основателю проекта: @Forlove2025")
 
+        # ПОДДЕРЖКА
+        elif call.data == "support":
+            markup = types.InlineKeyboardMarkup()
+            button = types.InlineKeyboardButton("Отправить сообщение в поддержку", callback_data="support_message")
+            markup.add(button)
+            bot.send_message(call.from_user.id, "У вас есть вопросы или нужна помощь? Мы всегда рядом! Напишите нам, расскажите о вашей ситуации или задайте вопрос, и наша команда поддержки ответит в кратчайшие сроки. Если хотите, прикрепите фото, чтобы мы лучше поняли ваш запрос. Давайте сделаем ваш опыт с 'За любовь' незабываемым!", reply_markup=markup)
+        elif call.data == "support_message":
+            bot.send_message(call.from_user.id, "Отправьте сообщение в поддержку")
+            bot.register_next_step_handler(call.message, support_message, bot)
+            
     bot.answer_callback_query(call.id)  # Теперь у вас открылись все возможности нашей платформы      
+    
+def support_message(message: types.Message, bot: TeleBot):
+    bot.send_message(message.chat.id, "Сообщение отправлено в поддержку")
+    bot.send_message(ADMIN_ACCOUNT, f"""
+Пользователь @{message.from_user.username} отправил сообщение в поддержку:
+
+{message.text}
+                     """)
