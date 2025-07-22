@@ -11,7 +11,6 @@ from handlers.handler import ref_handler
 ADMIN_ACCOUNT = 6062822304
 
 
-
 def handler_callback(bot: TeleBot, call: types.CallbackQuery):
     with Session(engine) as session:
         user = session.execute(select(User).where(User.tg_id == call.from_user.id)).scalar() # call.from_user.id
@@ -30,7 +29,7 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             markup.add(button)
             bot.send_message(call.from_user.id, """        
 Будьте в курсе всех новостей и событий проекта 'За любовь'! 
- 
+
 Подписывайтесь на наши социальные сети, чтобы следить за анонсами мероприятий, вдохновляющими историями участников и полезными материалами. 
 Мы делимся видео, статьями и отзывами, чтобы вы чувствовали себя частью нашего сообщества!
     """, reply_markup=markup)
@@ -45,7 +44,7 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
         elif call.data == "about_game":
             bot.send_message(call.from_user.id, """
 Игра 'За любовь' создана для 1–12 участников и подходит для людей любого возраста, которые хотят лучше понять себя и других. 
- 
+
 В комплект входят карточки с глубокими вопросами, заданиями и сценариями, которые помогают раскрыться, обсудить ценности и выстроить доверие. 
 Это идеальный способ начать свое путешествие в экосистеме 'За любовь'. Узнайте, как игра может изменить ваш взгляд на отношения!""")
         elif call.data == "our_cities":
@@ -106,8 +105,8 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             
             markup = types.InlineKeyboardMarkup()
             button = types.InlineKeyboardButton(f"Оплатить ({price} ₽)", url=quickpay.redirected_url)
-            button2 = types.InlineKeyboardButton(f"Проверить оплату", callback_data=f"check-buy-subscribe_{pay_metadata.id}")
-            markup.add(button, button2, row_width=2)
+            #button2 = types.InlineKeyboardButton(f"Проверить оплату", callback_data=f"check-buy-subscribe_{pay_metadata.id}")
+            markup.add(button, row_width=1)
             
             
             bot.send_message(call.from_user.id, f"""
@@ -201,8 +200,8 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             
             markup = types.InlineKeyboardMarkup()    
             button = types.InlineKeyboardButton(f"Оплатить ({price} ₽)", url=quickpay.redirected_url)
-            button2 = types.InlineKeyboardButton(f"Проверить оплату", callback_data=f"check-buy-product_{pay_metadata.id}")
-            markup.add(button, button2, row_width=2)
+            #button2 = types.InlineKeyboardButton(f"Проверить оплату", callback_data=f"check-buy-product_{pay_metadata.id}")
+            markup.add(button, row_width=1)
             
             
             
@@ -240,6 +239,7 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
         elif call.data == "_buy-product_forlove":
             bot.send_message(call.from_user.id, "Для получения реквизитов напишите основателю проекта: @Forlove2025")
         elif call.data.startswith("check-buy-product"):
+            pay_metadata_id = int(call.data.split('_')[1])
             client = Client("4100119236552041.62F531CC6CF1B5DBC00C5D38439C9ADF529D86C6E59F50507F0BCCF28A08A81561341999C0A80BA151B9EDA7D1BC45B6A60F4F2288D7315C2E42ABD29953788F11DB5746B31547AD6B2AE7A9DDAEBD835994DC7827D7403FC3E43E6252E78C7FFF1D03B3026251118E1DEB4E3ACC0427DF9F8AC976A380DA9CF640518CFC5D3D")
             history = client.operation_history(label=pay_metadata_id)
             if len(history.operations) > 0 and history.operations[0].status == "success":
