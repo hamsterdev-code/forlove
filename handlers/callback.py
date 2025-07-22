@@ -110,7 +110,7 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             
             
             bot.send_message(call.from_user.id, f"""
-После оплаты ОБЯЗАТЕЛЬНО нажмите кнопку "Проверить оплату", иначе ваша покупка не зафиксируется                    
+Благодарим. Теперь вы можете зарабатывать с реферальной программы   
                              """, reply_markup=markup)
         elif call.data.startswith("check-buy-subscribe"):
             pay_metadata_id = int(call.data.split('_')[1])
@@ -126,14 +126,14 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
                     bot.send_message(call.from_user.id, "Оплата уже проверена")
                 pay_metadata.has_payed = True
                 ref_handler(session, user, pay_metadata)
-                bot.send_message(call.from_user.id, "Для получения дальнейших инструкций обратитесь к @Forlove2025")
+                bot.send_message(call.from_user.id, "Для получения дальнейших инструкций обратитесь к @RodionRa")
                 bot.send_message(ADMIN_ACCOUNT, f"""
 Пользователь @{user.username} купил подписку {"на месяц"if pay_metadata.price == 333 else "на год"}
                                  """)
             else:
                 bot.answer_callback_query(call.id, text='Оплата не прошла. Проверьте и повторите попытку', show_alert=True)
         elif call.data == "_subscribe-send_forlove":
-            bot.send_message(call.from_user.id, "Для получения реквизитов напишите основателю проекта: @Forlove2025")
+            bot.send_message(call.from_user.id, "Для получения реквизитов напишите: @RodionRa")
         #ПРОДУКТЫ
         elif call.data == "our_products":
             markup = types.InlineKeyboardMarkup()
@@ -237,7 +237,7 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             else:
                 bot.send_message(call.from_user.id, text, reply_markup=markup)
         elif call.data == "_buy-product_forlove":
-            bot.send_message(call.from_user.id, "Для получения реквизитов напишите основателю проекта: @Forlove2025")
+            bot.send_message(call.from_user.id, "Для получения реквизитов напишите: @RodionRa")
         elif call.data.startswith("check-buy-product"):
             pay_metadata_id = int(call.data.split('_')[1])
             client = Client("4100119236552041.62F531CC6CF1B5DBC00C5D38439C9ADF529D86C6E59F50507F0BCCF28A08A81561341999C0A80BA151B9EDA7D1BC45B6A60F4F2288D7315C2E42ABD29953788F11DB5746B31547AD6B2AE7A9DDAEBD835994DC7827D7403FC3E43E6252E78C7FFF1D03B3026251118E1DEB4E3ACC0427DF9F8AC976A380DA9CF640518CFC5D3D")
@@ -262,7 +262,7 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
 Пользователь @{user.username} купил продукт на {pay_metadata} рублей
                                  """)
                 if pay_metadata.product != "package":
-                    bot.send_message(call.from_user.id, "Для получения дальнейших инструкций обратитесь к @Forlove2025")
+                    bot.send_message(call.from_user.id, "Для получения дальнейших инструкций обратитесь к @RodionRa")
                 else:
                     bot.send_message(call.from_user.id, "Увеличен заработок с реферальной программы")
             else:
@@ -295,12 +295,12 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             bot.send_message(call.from_user.id, """
 Мы проводим разные форматы мероприятий, чтобы каждый нашел что-то для себя. 
 Выберите, что вас вдохновляет: фестивали, туры, конкурсы или мастер-классы.
-Для более подробной информации напишите основателю проекта: @Forlove2025
+Для более подробной информации напишите: @RodionRa
                              """, reply_markup=markup)
         elif call.data == "_event_tour":
             bot.send_message(call.from_user.id, """Инфа про Тур""")
         elif call.data == "event_forlove":
-            bot.send_message(call.from_user.id, """Для более подробной информации напишите основателю проекта: @Forlove2025""")
+            bot.send_message(call.from_user.id, """Для более подробной информации напишите: @RodionRa""")
         elif call.data == "_event_festival":
             bot.send_message(call.from_user.id, """Инфа про Фестиваль""")
         elif call.data == "_event_conferences":
@@ -338,7 +338,7 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
 {schedule.name}, {schedule.city}, {schedule.start}
 """, reply_markup=markup)
         elif call.data == "inner_event_table_text":
-            bot.send_message(call.from_user.id, f"Для получения реквизитов и дальнейших инструкций обратитесь к @Forlove2025")
+            bot.send_message(call.from_user.id, f"Для получения реквизитов и дальнейших инструкций обратитесь к @RodionRa")
         
         elif call.data == "become_guide":
             markup = types.InlineKeyboardMarkup()
@@ -348,7 +348,7 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
 Мечтаете организовывать туры и мероприятия 'За любовь' в вашем городе? 
 
 Станьте гидом и вдохновляйте людей на новые знакомства и развитие! Мы предоставим вам обучение, материалы и поддержку, чтобы вы могли создавать незабываемые события. Узнайте, как начать, и подайте заявку!
-Для более подробной информации напишите основателю проекта: @Forlove2025
+Для более подробной информации напишите: @RodionRa
 """, reply_markup=markup)
         
         elif call.data == "become_guide_stay":
@@ -386,7 +386,7 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
 {nicks}   
                              """)
         elif call.data == "return_balance":
-            bot.send_message(call.from_user.id, "Для более подробной информации напишите основателю проекта: @Forlove2025")
+            bot.send_message(call.from_user.id, "Для более подробной информации напишите: @RodionRa")
 
         # ПОДДЕРЖКА
         elif call.data == "support":
