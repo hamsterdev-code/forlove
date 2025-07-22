@@ -8,4 +8,4 @@ RUN pip install pytelegrambotapi sqlalchemy pymysql yoomoney
 
 EXPOSE 80
 # run app
-CMD ["python", "bot.py"]
+CMD ["python", "yoomoney_checker.py"]
