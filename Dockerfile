@@ -4,7 +4,7 @@ WORKDIR /
 # copy project
 COPY . .
 # install dependencies
-RUN pip install pytelegrambotapi sqlalchemy pymysql yookassa
+RUN pip install pytelegrambotapi sqlalchemy pymysql yookassa uuid
 
 EXPOSE 80
 # run app
