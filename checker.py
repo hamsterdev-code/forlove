@@ -75,6 +75,10 @@ def ref_handler(session: Session, user: User, pay_metadata: PayMetadata):
         if user_ref.ref_level >= need_level: 
             user_ref.balance += pay_moneys # начисление денег
             user_ref.inner_balance += inner_pay_moneys # начисление денег
+            bot.send_message(user_ref.tg_id, f"""                   
+Приглашенный вами пользователь @{user.username} купил продукт
+Сумма: {pay_metadata.price} ₽
+Вы получили: {pay_moneys} ₽""")
         else:
             admin_user.inner_balance += inner_pay_moneys # начисление денег
             admin_user.balance += pay_moneys
@@ -112,6 +116,7 @@ def get_ref_inner_procent(line: int):
     else: return 0
 
 ADMIN_ACCOUNT = 6062822304
+ADMIN_CHAT_ID = -1002837224902
 
 app = FastAPI()
 
@@ -130,16 +135,34 @@ def checker():
                 pay_metadata.has_payed = True
                 
                 if pay_metadata.product == "package":
-                    if pay_metadata.price == 5000: user.ref_level = 2
-                    if pay_metadata.price == 15000: user.ref_level = 3
-                    if pay_metadata.price == 25000: user.ref_level = 4
-                    if pay_metadata.price == 45000: user.ref_level = 5
-                    if pay_metadata.price == 100000: user.ref_level = 6
-                
+                    if pay_metadata.price == 5000: 
+                        bot.send_message(user.tg_id, "Поздравляем, вы оплатили бизнес-пакет, вам активирован 2 и 3 уровень партнерской программы")
+                        user.ref_level = 2
+                    if pay_metadata.price == 15000: 
+                        bot.send_message(user.tg_id, "Поздравляем, вы оплатили бизнес-пакет, вам активирован 4 и 5 уровень партнерской программы")
+                        user.ref_level = 3
+                    if pay_metadata.price == 25000: 
+                        bot.send_message(user.tg_id, "Поздравляем, вы оплатили бизнес-пакет, вам активирован 6 и 7 уровень партнерской программы")
+                        user.ref_level = 4
+                    if pay_metadata.price == 45000: 
+                        bot.send_message(user.tg_id, "Поздравляем, вы оплатили бизнес-пакет, вам активирован 8 и 9 уровень партнерской программы")
+                        user.ref_level = 5
+                    if pay_metadata.price == 100000: 
+                        bot.send_message(user.tg_id, "Поздравляем, вы оплатили бизнес-пакет, вам активированы все 20 уровней партнерской программы")
+                        user.ref_level = 6
+                    bot.send_message(ADMIN_CHAT_ID, f"Пользователь @{user.username} купил бизнес пакет за {pay_metadata.price} ₽", message_thread_id=8)
+                if pay_metadata.product == "clubtraining":
+                    user.ref_level = 5
+                    bot.send_message(user.tg_id, "Вы оплатили обучающий курс «Организатор клуба знакомств».\n\nВам активирован подарок: подписка на 365 дней и 4 бизнес-пакета, которые открывают 2-9 уровень партнерской программы.\nДля получения дальнейших инструкций напишите @RodionRa")
+                if pay_metadata.product == "game":
+                    bot.send_message(ADMIN_CHAT_ID, f"Пользователь @{user.username} купил игру на {pay_metadata.price} ₽", message_thread_id=3)
+                    bot.send_message(user.tg_id, "Поздравляем, вы приобрели комплект игры. Перейдите в канал «ГОСПОДА ВЕДУЩИЕ» и получите бесплатно обучение и онлайн поддержку:\n\nt.me/+529rZolW6fJmNmYy")
                 bot.send_message(ADMIN_ACCOUNT, f"""
     Пользователь @{user.username} купил {"подписку" if pay_metadata.product.startswith("subscribe") else "продукт"} на {pay_metadata} рублей
                                     """)
+
                 if pay_metadata.product.startswith("subscribe"):
+                    bot.send_message(ADMIN_CHAT_ID, f"Пользователь @{user.username} купил подписку на {pay_metadata.price} ₽", message_thread_id=2)
                     bot.send_message(user.tg_id, "Для получения дальнейших инструкций обратитесь к @Forlove2025")
                 elif pay_metadata.product != "package":
                     bot.send_message(user.tg_id, "Для получения дальнейших инструкций обратитесь к @Forlove2025")
@@ -151,40 +174,8 @@ def checker():
                 session.commit()
         time.sleep(10)
         
-@app.get("/pay")
+@app.get("/")
 def check_pay():
-    payments = Payment.list({"limit": 100})
-    with Session(engine) as session:
-        for payment in payments.items:
-            print(payment.id, payment.paid, payment.amount.value)
-            if not payment.metadata["orderNumber"] or payment.paid == False: continue
-            pay_metadata_id = int(payment.metadata["orderNumber"])
-            pay_metadata = session.execute(select(PayMetadata).where(PayMetadata.id == pay_metadata_id)).scalar()
-            if pay_metadata == None or pay_metadata.has_payed == True: continue
-            user = session.execute(select(User).where(User.id == pay_metadata.user_id)).scalar()
-            
-            pay_metadata.has_payed = True
-            
-            if pay_metadata.product == "package":
-                if pay_metadata.price == 5000: user.ref_level = 2
-                if pay_metadata.price == 15000: user.ref_level = 3
-                if pay_metadata.price == 25000: user.ref_level = 4
-                if pay_metadata.price == 45000: user.ref_level = 5
-                if pay_metadata.price == 100000: user.ref_level = 6
-            
-            bot.send_message(ADMIN_ACCOUNT, f"""
-Пользователь @{user.username} купил {"подписку" if pay_metadata.product.startswith("subscribe") else "продукт"} на {pay_metadata} рублей
-                                """)
-            if pay_metadata.product.startswith("subscribe"):
-                bot.send_message(user.tg_id, "Для получения дальнейших инструкций обратитесь к @Forlove2025")
-            elif pay_metadata.product != "package":
-                bot.send_message(user.tg_id, "Для получения дальнейших инструкций обратитесь к @Forlove2025")
-            else:
-                bot.send_message(user.tg_id, "Увеличен заработок с реферальной программы")
-            
-            ref_handler(session, user, pay_metadata)
-            
-            session.commit()
     return HTMLResponse("""
 <h2>Перенаправление на бота</h2>
 <script>window.open("https://t.me/forlove2025_bot", '_blank')</script>
