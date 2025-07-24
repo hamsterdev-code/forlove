@@ -134,7 +134,7 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
                                 "description": "Подписка платформы",
                                 "quantity": "1.00",
                                 "amount": {
-                                    "value": 3,
+                                    "value": price,
                                     "currency": "RUB"
                                 },
                                 "vat_code": "2",
@@ -253,10 +253,10 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
                         },
                         "items": [
                             {
-                                "description": "Подписка платформы",
+                                "description": "Пакет",
                                 "quantity": "1.00",
                                 "amount": {
-                                    "value": 3,
+                                    "value": price,
                                     "currency": "RUB"
                                 },
                                 "vat_code": "2",
