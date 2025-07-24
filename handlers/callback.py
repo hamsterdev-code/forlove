@@ -6,7 +6,14 @@ from db.connect import engine
 from db.models import City, PayMetadata, Schedule, User
 from datetime import datetime
 from handlers.handler import ref_handler
+from yookassa import Configuration, Payment
+import uuid
 
+
+SECRET_API = "live_8sy3urnb4lO3FxsGsaxANT4wC20ZMT97Fb-PAnCD7Sk"
+SHOP_ID = 1124758
+
+Configuration.configure(SHOP_ID, SECRET_API)
 
 ADMIN_ACCOUNT = 6062822304
 
@@ -98,17 +105,64 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             session.add(pay_metadata)
             session.commit()
             
-            quickpay = Quickpay(
-                receiver="4100119236552041",
-                quickpay_form="shop",
-                targets="Sponsor this project",
-                paymentType="SB",
-                sum=int(price),
-                label=pay_metadata.id
+            idempotence_key = str(uuid.uuid4())
+            
+            payment = Payment.create(
+                {
+                    "id": idempotence_key,
+                    "amount": {
+                        "value": price,
+                        "currency": "RUB"
+                    },
+                    "confirmation": {
+                        "type": "redirect",
+                        "return_url": "https://merchant-site.ru/return_url"
+                    },
+                    "capture": True,
+                    "description": pay_metadata.id,
+                    "metadata": {
+                        'orderNumber': pay_metadata.id
+                    },
+                    "receipt": {
+                        "customer": {
+                            "full_name": "Николаев Артем Алексеевич",
+                            "email": "cfznyjdf13@mail.ru",
+                            "phone": "79166758299",
+                            "inn": "170108382176"
+                        },
+                        "items": [
+                            {
+                                "description": "Подписка платформы",
+                                "quantity": "1.00",
+                                "amount": {
+                                    "value": 3,
+                                    "currency": "RUB"
+                                },
+                                "vat_code": "2",
+                                "payment_mode": "full_payment",
+                                "payment_subject": "commodity",
+                                "country_of_origin_code": "RU",
+                                "product_code": "44 4D 01 00 21 FA 41 00 23 05 41 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 12 00 AB 00",
+                                "customs_declaration_number": "10714040/140917/0090376",
+                                "excise": "20.00",
+                                "supplier": {
+                                    "name": "string",
+                                    "phone": "string",
+                                    "inn": "string"
+                                }
+                            },
+                        ]
+                    },
+                }, 
+                idempotency_key=idempotence_key
             )
             
+
+            # get confirmation url
+            confirmation_url = payment.confirmation.confirmation_url
+            
             markup = types.InlineKeyboardMarkup()
-            button = types.InlineKeyboardButton(f"Оплатить ({price} ₽)", url=quickpay.redirected_url)
+            button = types.InlineKeyboardButton(f"Оплатить ({price} ₽)", url=confirmation_url)
             #button2 = types.InlineKeyboardButton(f"Проверить оплату", callback_data=f"check-buy-subscribe_{pay_metadata.id}")
             markup.add(button, row_width=1)
             
@@ -193,17 +247,62 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             session.add(pay_metadata)
             session.commit()
             
-            quickpay = Quickpay(
-                receiver="4100119236552041",
-                quickpay_form="shop",
-                targets="Sponsor this project",
-                paymentType="SB",
-                sum=int(price),
-                label=pay_metadata.id
+            idempotence_key = str(uuid.uuid4())
+            
+            payment = Payment.create(
+                {
+                    "id": idempotence_key,
+                    "amount": {
+                        "value": price,
+                        "currency": "RUB"
+                    },
+                    "confirmation": {
+                        "type": "redirect",
+                        "return_url": "https://merchant-site.ru/return_url"
+                    },
+                    "capture": True,
+                    "description": pay_metadata.id,
+                    "metadata": {
+                        'orderNumber': pay_metadata.id
+                    },
+                    "receipt": {
+                        "customer": {
+                            "full_name": "Николаев Артем Алексеевич",
+                            "email": "cfznyjdf13@mail.ru",
+                            "phone": "79166758299",
+                            "inn": "170108382176"
+                        },
+                        "items": [
+                            {
+                                "description": "Подписка платформы",
+                                "quantity": "1.00",
+                                "amount": {
+                                    "value": 3,
+                                    "currency": "RUB"
+                                },
+                                "vat_code": "2",
+                                "payment_mode": "full_payment",
+                                "payment_subject": "commodity",
+                                "country_of_origin_code": "RU",
+                                "product_code": "44 4D 01 00 21 FA 41 00 23 05 41 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 12 00 AB 00",
+                                "customs_declaration_number": "10714040/140917/0090376",
+                                "excise": "20.00",
+                                "supplier": {
+                                    "name": "string",
+                                    "phone": "string",
+                                    "inn": "string"
+                                }
+                            },
+                        ]
+                    },
+                }, 
+                idempotency_key=idempotence_key
             )
             
+            confirmation_url = payment.confirmation.confirmation_url
+            
             markup = types.InlineKeyboardMarkup()    
-            button = types.InlineKeyboardButton(f"Оплатить ({price} ₽)", url=quickpay.redirected_url)
+            button = types.InlineKeyboardButton(f"Оплатить ({price} ₽)", url=confirmation_url)
             #button2 = types.InlineKeyboardButton(f"Проверить оплату", callback_data=f"check-buy-product_{pay_metadata.id}")
             markup.add(button, row_width=1)
             
