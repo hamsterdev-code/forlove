@@ -4,8 +4,8 @@ WORKDIR /
 # copy project
 COPY . .
 # install dependencies
-RUN pip install pytelegrambotapi sqlalchemy pymysql yoomoney
+RUN pip install pytelegrambotapi sqlalchemy pymysql uvicorn yookassa fastapi
 
-EXPOSE 80
+EXPOSE 8000
 # run app
 CMD ["python", "checker.py"]
