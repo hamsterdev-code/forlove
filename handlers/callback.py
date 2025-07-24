@@ -1,7 +1,6 @@
 from sqlalchemy import select, and_
 from telebot import TeleBot, types
 from sqlalchemy.orm import Session
-from yoomoney import Authorize, Client, Quickpay
 from db.connect import engine
 from db.models import City, PayMetadata, Schedule, User
 from datetime import datetime
@@ -170,26 +169,6 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             bot.send_message(call.from_user.id, f"""
 Благодарим. Теперь вы можете зарабатывать с реферальной программы   
                              """, reply_markup=markup)
-        elif call.data.startswith("check-buy-subscribe"):
-            pay_metadata_id = int(call.data.split('_')[1])
-            client = Client("4100119236552041.62F531CC6CF1B5DBC00C5D38439C9ADF529D86C6E59F50507F0BCCF28A08A81561341999C0A80BA151B9EDA7D1BC45B6A60F4F2288D7315C2E42ABD29953788F11DB5746B31547AD6B2AE7A9DDAEBD835994DC7827D7403FC3E43E6252E78C7FFF1D03B3026251118E1DEB4E3ACC0427DF9F8AC976A380DA9CF640518CFC5D3D")
-            history = client.operation_history(label=pay_metadata_id)
-            if len(history.operations) > 0 and history.operations[0].status == "success":
-                payed = True
-            else: payed = False
-            
-            if payed:
-                pay_metadata = session.execute(select(PayMetadata).where(PayMetadata.id == pay_metadata_id)).scalar()
-                if pay_metadata.has_payed == True:
-                    bot.send_message(call.from_user.id, "Оплата уже проверена")
-                pay_metadata.has_payed = True
-                ref_handler(session, user, pay_metadata)
-                bot.send_message(call.from_user.id, "Для получения дальнейших инструкций обратитесь к @RodionRa")
-                bot.send_message(ADMIN_ACCOUNT, f"""
-Пользователь @{user.username} купил подписку {"на месяц"if pay_metadata.price == 333 else "на год"}
-                                 """)
-            else:
-                bot.answer_callback_query(call.id, text='Оплата не прошла. Проверьте и повторите попытку', show_alert=True)
         elif call.data == "_subscribe-send_forlove":
             bot.send_message(call.from_user.id, "Для получения реквизитов напишите: @RodionRa")
         #ПРОДУКТЫ
@@ -341,36 +320,7 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
                 bot.send_message(call.from_user.id, text, reply_markup=markup)
         elif call.data == "_buy-product_forlove":
             bot.send_message(call.from_user.id, "Для получения реквизитов напишите: @RodionRa")
-        elif call.data.startswith("check-buy-product"):
-            pay_metadata_id = int(call.data.split('_')[1])
-            client = Client("4100119236552041.62F531CC6CF1B5DBC00C5D38439C9ADF529D86C6E59F50507F0BCCF28A08A81561341999C0A80BA151B9EDA7D1BC45B6A60F4F2288D7315C2E42ABD29953788F11DB5746B31547AD6B2AE7A9DDAEBD835994DC7827D7403FC3E43E6252E78C7FFF1D03B3026251118E1DEB4E3ACC0427DF9F8AC976A380DA9CF640518CFC5D3D")
-            history = client.operation_history(label=pay_metadata_id)
-            if len(history.operations) > 0 and history.operations[0].status == "success":
-                payed = True
-            else: payed = False
-            
-            if payed:
-                pay_metadata = session.execute(select(PayMetadata).where(PayMetadata.id == int(call.data.split('_')[1]))).scalar()
-                if pay_metadata.has_payed == True:
-                    bot.send_message(call.from_user.id, "Оплата уже проверена")
-                pay_metadata.has_payed = True
-                if pay_metadata.product == "package":
-                    if pay_metadata.price == 5000: user.ref_level = 2
-                    if pay_metadata.price == 15000: user.ref_level = 3
-                    if pay_metadata.price == 25000: user.ref_level = 4
-                    if pay_metadata.price == 45000: user.ref_level = 5
-                    if pay_metadata.price == 100000: user.ref_level = 6
-                ref_handler(session, user, pay_metadata)
-                bot.send_message(ADMIN_ACCOUNT, f"""
-Пользователь @{user.username} купил продукт на {pay_metadata} рублей
-                                 """)
-                if pay_metadata.product != "package":
-                    bot.send_message(call.from_user.id, "Для получения дальнейших инструкций обратитесь к @RodionRa")
-                else:
-                    bot.send_message(call.from_user.id, "Увеличен заработок с реферальной программы")
-            else:
-                bot.answer_callback_query(call.id, text='Оплата не прошла. Проверьте и повторите попытку', show_alert=True)
-            
+          
         #МЕРОПРИЯТИЯ
         elif call.data == "our_events":
             markup = types.InlineKeyboardMarkup()    
