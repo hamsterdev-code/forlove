@@ -115,7 +115,7 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
                     },
                     "confirmation": {
                         "type": "redirect",
-                        "return_url": "https://merchant-site.ru/return_url"
+                        "return_url": "https://t.me/forlove2025_bot"
                     },
                     "capture": True,
                     "description": pay_metadata.id,
@@ -237,7 +237,7 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
                     },
                     "confirmation": {
                         "type": "redirect",
-                        "return_url": "https://merchant-site.ru/return_url"
+                        "return_url": "https://t.me/forlove2025_bot"
                     },
                     "capture": True,
                     "description": pay_metadata.id,
