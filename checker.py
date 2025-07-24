@@ -1,18 +1,26 @@
 
 
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session, DeclarativeBase
 from sqlalchemy import Column, Integer, String, create_engine, Boolean, BigInteger, select
+import uvicorn
 from yoomoney import Client
 from threading import Thread
 import time
 import datetime
 from telebot import TeleBot, types
+from yookassa import Configuration, Payment
 
+
+SECRET_API = "live_8sy3urnb4lO3FxsGsaxANT4wC20ZMT97Fb-PAnCD7Sk"
+SHOP_ID = 1124758
 engine = create_engine(
     "mysql+pymysql://gen_user:hamsterdev1@89.169.45.136:3306/default_db", #   sqlite:///server.db
     connect_args={"ssl": {"required": True}}  # или {"ssl": True}
 )
 bot = TeleBot("7713812500:AAFBkZRpgYKbatoUkj0N-niA-5nXbYWZOJg")
+Configuration.configure(SHOP_ID, SECRET_API)
 
 class Base(DeclarativeBase):
     created_at = Column(Integer, default=datetime.datetime.now(datetime.timezone.utc).timestamp())
@@ -31,7 +39,6 @@ class User(Base):
     has_ended = Column(Boolean, default=False)
     ref = Column(BigInteger)
     ref_level = Column(Integer, default=1)
-
 class City(Base):
     __tablename__ = 'cities'
     
@@ -40,7 +47,6 @@ class City(Base):
     text = Column(String(255))
     agent_account = Column(String(255))
     channel_link = Column(String(255))
-
 class Schedule(Base):
     __tablename__ = 'schedules'
     
@@ -48,7 +54,6 @@ class Schedule(Base):
     name = Column(String(255))
     city = Column(Integer)
     start = Column(String(255))
-
 class PayMetadata(Base):
     __tablename__ = 'pay_metadatas'
     
@@ -111,15 +116,16 @@ def get_ref_inner_procent(line: int):
 
 ADMIN_ACCOUNT = 6062822304
 
+app = FastAPI()
+
 def checker():
     while True:
         with Session(engine) as session:
-            client = Client("4100119236552041.62F531CC6CF1B5DBC00C5D38439C9ADF529D86C6E59F50507F0BCCF28A08A81561341999C0A80BA151B9EDA7D1BC45B6A60F4F2288D7315C2E42ABD29953788F11DB5746B31547AD6B2AE7A9DDAEBD835994DC7827D7403FC3E43E6252E78C7FFF1D03B3026251118E1DEB4E3ACC0427DF9F8AC976A380DA9CF640518CFC5D3D")
-            client_history = client.operation_history()
-            for history in client_history.operations:
-                print("id: ", history.label, "date: ", history.datetime, "amount: ", history.amount)
-                if not history.label: continue
-                pay_metadata_id = int(history.label)
+            payments = Payment.list({"limit": 100})
+            for payment in payments.items:
+                print(payment.id, payment.paid, payment.amount.value)
+                if not payment.metadata["orderNumber"] or payment.paid == False: continue
+                pay_metadata_id = int(payment.metadata["orderNumber"])
                 pay_metadata = session.execute(select(PayMetadata).where(PayMetadata.id == pay_metadata_id)).scalar()
                 if pay_metadata == None or pay_metadata.has_payed == True: continue
                 user = session.execute(select(User).where(User.id == pay_metadata.user_id)).scalar()
@@ -134,8 +140,8 @@ def checker():
                     if pay_metadata.price == 100000: user.ref_level = 6
                 
                 bot.send_message(ADMIN_ACCOUNT, f"""
-Пользователь @{user.username} купил {"подписку" if pay_metadata.product.startswith("subscribe") else "продукт"} на {pay_metadata} рублей
-                                 """)
+    Пользователь @{user.username} купил {"подписку" if pay_metadata.product.startswith("subscribe") else "продукт"} на {pay_metadata} рублей
+                                    """)
                 if pay_metadata.product.startswith("subscribe"):
                     bot.send_message(user.tg_id, "Для получения дальнейших инструкций обратитесь к @Forlove2025")
                 elif pay_metadata.product != "package":
@@ -146,9 +152,49 @@ def checker():
                 ref_handler(session, user, pay_metadata)
                 
                 session.commit()
-                
         time.sleep(10)
         
+@app.get("/pay")
+def check_pay():
+    payments = Payment.list({"limit": 100})
+    with Session(engine) as session:
+        for payment in payments.items:
+            print(payment.id, payment.paid, payment.amount.value)
+            if not payment.metadata["orderNumber"] or payment.paid == False: continue
+            pay_metadata_id = int(payment.metadata["orderNumber"])
+            pay_metadata = session.execute(select(PayMetadata).where(PayMetadata.id == pay_metadata_id)).scalar()
+            if pay_metadata == None or pay_metadata.has_payed == True: continue
+            user = session.execute(select(User).where(User.id == pay_metadata.user_id)).scalar()
+            
+            pay_metadata.has_payed = True
+            
+            if pay_metadata.product == "package":
+                if pay_metadata.price == 5000: user.ref_level = 2
+                if pay_metadata.price == 15000: user.ref_level = 3
+                if pay_metadata.price == 25000: user.ref_level = 4
+                if pay_metadata.price == 45000: user.ref_level = 5
+                if pay_metadata.price == 100000: user.ref_level = 6
+            
+            bot.send_message(ADMIN_ACCOUNT, f"""
+Пользователь @{user.username} купил {"подписку" if pay_metadata.product.startswith("subscribe") else "продукт"} на {pay_metadata} рублей
+                                """)
+            if pay_metadata.product.startswith("subscribe"):
+                bot.send_message(user.tg_id, "Для получения дальнейших инструкций обратитесь к @Forlove2025")
+            elif pay_metadata.product != "package":
+                bot.send_message(user.tg_id, "Для получения дальнейших инструкций обратитесь к @Forlove2025")
+            else:
+                bot.send_message(user.tg_id, "Увеличен заработок с реферальной программы")
+            
+            ref_handler(session, user, pay_metadata)
+            
+            session.commit()
+    return HTMLResponse("""
+<h2>Перенаправление на бота</h2>
+<script>window.open("https://t.me/forlove2025_bot", '_blank')</script>
+""")
+
+checker_thread = Thread(target=checker)
+checker_thread.start()
+
 if __name__ == "__main__":
-    thread = Thread(target=checker)
-    thread.start()
+    uvicorn.run(app)
