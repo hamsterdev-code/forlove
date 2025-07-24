@@ -1,10 +1,10 @@
-from sqlalchemy import select, and_
+from sqlalchemy import select
 from telebot import TeleBot, types
 from sqlalchemy.orm import Session
 from db.connect import engine
 from db.models import City, PayMetadata, Schedule, User
 from datetime import datetime
-from handlers.handler import ref_handler
+from handlers.handler import get_user_ref
 from yookassa import Configuration, Payment
 import uuid
 
@@ -15,6 +15,7 @@ SHOP_ID = 1124758
 Configuration.configure(SHOP_ID, SECRET_API)
 
 ADMIN_ACCOUNT = 6062822304
+ADMIN_CHAT_ID = -1002837224902
 
 
 def handler_callback(bot: TeleBot, call: types.CallbackQuery):
@@ -34,7 +35,8 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
         elif call.data == 'media_channels':
             markup = types.InlineKeyboardMarkup()
             button = types.InlineKeyboardButton("Telegram канал", url="https://t.me/za_lyubov_igra")
-            markup.add(button)
+            button2 = types.InlineKeyboardButton("Rutube", url="https://rutube.ru/channel/25861872")
+            markup.add(button, button2, row_width=1)
             bot.send_message(call.from_user.id, """        
 Будьте в курсе всех новостей и событий проекта 'За любовь'! 
 
@@ -188,20 +190,18 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             if user.ref_level == 1: 
                 button3 = types.InlineKeyboardButton("Пакет за 5000 ₽", callback_data=f"buy-product_package_5000")
                 markup.add(button3)
-            if user.ref_level > 1:
-                if user.ref_level <= 2: 
-                    button4 = types.InlineKeyboardButton("Пакет за 15000 ₽", callback_data=f"buy-product_package_15000")
-                    markup.add(button4)
-                if user.ref_level <= 3:
-                    button5 = types.InlineKeyboardButton("Пакет за 25000 ₽", callback_data=f"buy-product_package_25000")
-                    markup.add(button5)
-                if user.ref_level <= 4:
-                    button6 = types.InlineKeyboardButton("Пакет за 45000 ₽", callback_data=f"buy-product_package_45000")
-                    markup.add(button6)
-                if user.ref_level <= 5: 
-                    button7 = types.InlineKeyboardButton("Пакет за 100000 ₽", callback_data=f"buy-product_package_100000")
-                    markup.add(button7)
-            #сначала только 5к, затем все пакеты должны быть открыты
+            if user.ref_level == 2: 
+                button4 = types.InlineKeyboardButton("Пакет за 15000 ₽", callback_data=f"buy-product_package_15000")
+                markup.add(button4)
+            if user.ref_level == 3:
+                button5 = types.InlineKeyboardButton("Пакет за 25000 ₽", callback_data=f"buy-product_package_25000")
+                markup.add(button5)
+            if user.ref_level == 4:
+                button6 = types.InlineKeyboardButton("Пакет за 45000 ₽", callback_data=f"buy-product_package_45000")
+                markup.add(button6)
+            if user.ref_level == 5: 
+                button7 = types.InlineKeyboardButton("Пакет за 100000 ₽", callback_data=f"buy-product_package_100000")
+                markup.add(button7)
 
             
             bot.send_message(call.from_user.id, """
@@ -412,14 +412,19 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
         elif call.data == "ref_program":
             markup = types.InlineKeyboardMarkup()
             button = types.InlineKeyboardButton("Моя структура", callback_data="ref_structure")
-            button2 = types.InlineKeyboardButton("Конвертация бонусов", callback_data="return_balance")
-            markup.add(button, button2, row_width=1)
+            button2 = types.InlineKeyboardButton("Перевод средств", callback_data="transfer_balance")
+            button2 = types.InlineKeyboardButton("Заявка на вывод", callback_data="return_balance")
+            button3 = types.InlineKeyboardButton("Сменить спонсора", callback_data="change_sponsor")
+            markup.add(button, button2, button3, row_width=1)
             
             bot.send_message(call.from_user.id, f"""
 Зарабатывайте, приглашая друзей в проект 'За любовь'! Наша реферальная программа позволяет вам получать доход от подписок, игр и со всех других продуктов, которыми делятся ваши приглашенные. Чем больше ваша команда, тем выше ваш заработок — до 20 уровней партнерской сети. Получите свою уникальную ссылку, следите за балансом и стройте свою структуру уже сегодня!
 
-Реферальная ссылка:
+Реферальная ссылка (Нажмите, чтобы скопировать): 
 <code>https://t.me/forlove2025_bot?start={call.from_user.id}</code>
+
+Мой спонсор:
+@{get_user_ref(session, user).username}
 
 Бонусный баланс:
 {user.balance} ₽
@@ -439,8 +444,15 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
 {nicks}   
                              """)
         elif call.data == "return_balance":
-            bot.send_message(call.from_user.id, "Для более подробной информации напишите: @RodionRa")
-
+            bot.send_message(call.from_user.id, "Скоро с вами свяжется наш представитель")
+            bot.send_message(ADMIN_CHAT_ID, f"Заявка на вывод средств от @{user.username} (его баланс - {user.balance} ₽)", message_thread_id=6)
+        elif call.data == "transfer_balance":
+            bot.send_message(call.from_user.id, "Вы можете перевести средства с бонусного баланса. Напишите ник кому вы хотите перевести (в формате @ник)")
+            bot.register_next_step_handler(call.message, transfer_balance_1, bot)
+        
+        elif call.data == "change_sponsor":
+            bot.send_message(call.from_user.id, f"Вы можете перевести средства с бонусного баланса. Напишите ник кому вы хотите перевести (в формате @ник) или напишите 'Отмена' чтобы отменить отправку баланса")
+            bot.register_next_step_handler(call.message, change_sponsor_1, bot)
         # ПОДДЕРЖКА
         elif call.data == "support":
             markup = types.InlineKeyboardMarkup()
@@ -455,8 +467,47 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
     
 def support_message(message: types.Message, bot: TeleBot):
     bot.send_message(message.chat.id, "Сообщение отправлено в поддержку")
-    bot.send_message(61886854, f"""
+    bot.send_message(ADMIN_CHAT_ID, f"""
 Пользователь @{message.from_user.username} отправил сообщение в поддержку:
 
 {message.text}
-                     """)
+                     """, message_thread_id=7)
+def change_sponsor_1(message: types.Message, bot: TeleBot):
+    new_sponsor = message.text[1:]
+    bot.send_message(message.chat.id, "Вы точно уверены в смене спонсора? Введите «Да»")
+    bot.register_next_step_handler(message, change_sponsor_2, bot, new_sponsor)
+def change_sponsor_2(message: types.Message, bot: TeleBot, new_sponsor: str):
+    if "да" in message.text.lower():
+        with Session(engine) as session:
+            ref_user = session.execute(select(User).where(User.username == new_sponsor)).scalar()
+            if ref_user == None: 
+                bot.send_message(message.chat.id, "Спонсор не найден.")
+                bot.send_message(message.chat.id, f"Напишите ник под кого вы хотите перейти (в формате @ник)")
+                bot.register_next_step_handler(message, change_sponsor_1, bot)
+                return
+            bot.send_message(message.chat.id, "Спонсор успешно изменен")
+            user = session.execute(select(User).where(User.tg_id == message.from_user.id)).scalar()
+            user.ref = ref_user.tg_id
+            session.commit()
+                
+    else:
+        bot.send_message(message.chat.id, "Изменение спонсора отменено")
+def transfer_balance_1(message: types.Message, bot: TeleBot):
+    if 'отмена' in message.text.lower():
+        bot.send_message(message.chat.id, "Отправка баланса отменена")
+        return
+    with Session(engine) as session:
+        balance_get_user = session.execute(select(User).where(User.username == message.text[1:])).scalar()
+        if balance_get_user == None:
+            bot.send_message(message.chat.id, "Пользователь не найден")
+            bot.send_message(message.chat.id, f"Вы можете перевести средства с бонусного баланса. Напишите ник кому вы хотите перевести (в формате @ник) или напишите 'Отмена' чтобы отменить отправку баланса")
+            bot.register_next_step_handler(message, change_sponsor_1, bot)
+        
+        user = session.execute(select(User).where(User.tg_id == message.from_user.id)).scalar()
+        balance = user.balance
+        balance_get_user.balance += balance
+        session.commit()
+        user.balance = 0
+        session.commit()
+        bot.send_message(message.chat.id, f"Баланс успешно отправился '{balance_get_user.full_name}'")
+

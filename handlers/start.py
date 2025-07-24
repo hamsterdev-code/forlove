@@ -9,7 +9,7 @@ def handle_start_message(bot: TeleBot, chat_id: int):
     markup.add(item1)
     bot.send_message(chat_id, "Спасибо, что присоединились к нам! 🎉", reply_markup=markup)
     
-    
+     
     markup = types.InlineKeyboardMarkup()
     button1 = types.InlineKeyboardButton("О проекте",callback_data="about_project")
     button2 = types.InlineKeyboardButton("Запись на игру",callback_data="sign_for_game")
@@ -96,6 +96,7 @@ def handle_phone(message: types.Message, bot: TeleBot):
                 user.phone = str(phone_number)
                 user.has_ended = True
                 session.commit()
+                bot.send_message(message.chat.id, "Вы зарегистрировались в проекте.\n\nПоздравляем с получением бесплатной подписки на 30 суток.Вам Активирован 1 уровень партнерской программы.\n\nПереходите в наш канал: @za_lyubov_igra")
                 handle_start_message(bot, message.chat.id)
     except:
         bot.send_message(message.chat.id, "Номер телефона не получен")
