@@ -1,11 +1,8 @@
-
-
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session, DeclarativeBase
 from sqlalchemy import Column, Integer, String, create_engine, Boolean, BigInteger, select
 import uvicorn
-from yoomoney import Client
 from threading import Thread
 import time
 import datetime
@@ -197,4 +194,4 @@ checker_thread = Thread(target=checker)
 checker_thread.start()
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app)
