@@ -1,9 +1,8 @@
 from fastapi import FastAPI
 from sqladmin import Admin, ModelView
-from sqlalchemy.orm import Session, DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import Column, Integer, String, create_engine, Boolean, BigInteger, select
 import datetime
-import uvicorn
 
 
 engine = create_engine(
