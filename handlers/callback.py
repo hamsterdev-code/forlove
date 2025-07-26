@@ -8,6 +8,8 @@ from handlers.handler import get_user_ref
 from yookassa import Configuration, Payment
 import uuid
 
+from handlers.start import handle_start_message
+
 
 SECRET_API = "live_8sy3urnb4lO3FxsGsaxANT4wC20ZMT97Fb-PAnCD7Sk"
 SHOP_ID = 1124758
@@ -413,9 +415,9 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             markup = types.InlineKeyboardMarkup()
             button = types.InlineKeyboardButton("Моя структура", callback_data="ref_structure")
             button2 = types.InlineKeyboardButton("Перевод средств", callback_data="transfer_balance")
-            button2 = types.InlineKeyboardButton("Заявка на вывод", callback_data="return_balance")
-            button3 = types.InlineKeyboardButton("Сменить спонсора", callback_data="change_sponsor")
-            markup.add(button, button2, button3, row_width=1)
+            button3 = types.InlineKeyboardButton("Заявка на вывод", callback_data="return_balance")
+            button4 = types.InlineKeyboardButton("Сменить спонсора", callback_data="change_sponsor")
+            markup.add(button, button2, button3, button4, row_width=1)
             
             bot.send_message(call.from_user.id, f"""
 Зарабатывайте, приглашая друзей в проект 'За любовь'! Наша реферальная программа позволяет вам получать доход от подписок, игр и со всех других продуктов, которыми делятся ваши приглашенные. Чем больше ваша команда, тем выше ваш заработок — до 20 уровней партнерской сети. Получите свою уникальную ссылку, следите за балансом и стройте свою структуру уже сегодня!
@@ -451,7 +453,7 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             bot.register_next_step_handler(call.message, transfer_balance_1, bot)
         
         elif call.data == "change_sponsor":
-            bot.send_message(call.from_user.id, f"Вы можете перевести средства с бонусного баланса. Напишите ник кому вы хотите перевести (в формате @ник) или напишите 'Отмена' чтобы отменить отправку баланса")
+            bot.send_message(call.from_user.id, f"Напишите ник под кого вы хотите перейти (в формате @ник)")
             bot.register_next_step_handler(call.message, change_sponsor_1, bot)
         # ПОДДЕРЖКА
         elif call.data == "support":
@@ -473,17 +475,24 @@ def support_message(message: types.Message, bot: TeleBot):
 {message.text}
                      """, message_thread_id=7)
 def change_sponsor_1(message: types.Message, bot: TeleBot):
+    if message.text == "На главную":
+        handle_start_message(bot, message.chat.id)
+        return
     new_sponsor = message.text[1:]
     bot.send_message(message.chat.id, "Вы точно уверены в смене спонсора? Введите «Да»")
     bot.register_next_step_handler(message, change_sponsor_2, bot, new_sponsor)
 def change_sponsor_2(message: types.Message, bot: TeleBot, new_sponsor: str):
+    if message.text == "На главную": 
+        handle_start_message(bot, message.chat.id)
+        return
+    
     if "да" in message.text.lower():
         with Session(engine) as session:
             ref_user = session.execute(select(User).where(User.username == new_sponsor)).scalar()
             if ref_user == None: 
                 bot.send_message(message.chat.id, "Спонсор не найден.")
-                bot.send_message(message.chat.id, f"Напишите ник под кого вы хотите перейти (в формате @ник)")
-                bot.register_next_step_handler(message, change_sponsor_1, bot)
+                #bot.send_message(message.chat.id, f"Напишите ник под кого вы хотите перейти (в формате @ник)")
+                #bot.register_next_step_handler(message, change_sponsor_1, bot)
                 return
             bot.send_message(message.chat.id, "Спонсор успешно изменен")
             user = session.execute(select(User).where(User.tg_id == message.from_user.id)).scalar()
@@ -493,6 +502,9 @@ def change_sponsor_2(message: types.Message, bot: TeleBot, new_sponsor: str):
     else:
         bot.send_message(message.chat.id, "Изменение спонсора отменено")
 def transfer_balance_1(message: types.Message, bot: TeleBot):
+    if message.text == "На главную": 
+        handle_start_message(bot, message.chat.id)
+        return
     if 'отмена' in message.text.lower():
         bot.send_message(message.chat.id, "Отправка баланса отменена")
         return
@@ -500,8 +512,8 @@ def transfer_balance_1(message: types.Message, bot: TeleBot):
         balance_get_user = session.execute(select(User).where(User.username == message.text[1:])).scalar()
         if balance_get_user == None:
             bot.send_message(message.chat.id, "Пользователь не найден")
-            bot.send_message(message.chat.id, f"Вы можете перевести средства с бонусного баланса. Напишите ник кому вы хотите перевести (в формате @ник) или напишите 'Отмена' чтобы отменить отправку баланса")
-            bot.register_next_step_handler(message, change_sponsor_1, bot)
+            #bot.send_message(message.chat.id, f"Вы можете перевести средства с бонусного баланса. Напишите ник кому вы хотите перевести (в формате @ник) или напишите 'Отмена' чтобы отменить отправку баланса")
+            #bot.register_next_step_handler(message, change_sponsor_1, bot)
         
         user = session.execute(select(User).where(User.tg_id == message.from_user.id)).scalar()
         balance = user.balance
