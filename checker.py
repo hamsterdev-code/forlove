@@ -67,7 +67,7 @@ def ref_handler(session: Session, user: User, pay_metadata: PayMetadata):
     admin_user = session.execute(select(User).where(User.id == 1)).scalar()
     total_pay_moneys = pay_metadata.price * (pay_metadata.procent_balance / 100)
     total_inner_pay_moneys = pay_metadata.price * (pay_metadata.inner_balance / 100)
-    for i in range(1, 13):
+    for i in range(1, 21):
         need_level = need_ref_level(i)
         pay_moneys = total_pay_moneys * get_ref_procent(i) / 100
         inner_pay_moneys = total_inner_pay_moneys * get_ref_inner_procent(i) / 100
@@ -109,6 +109,14 @@ def get_ref_procent(line: int):
     if line == 10: return 0.5
     if line == 11: return 0.25
     if line == 12: return 0.125 
+    if line == 13: return 0.0625 
+    if line == 14: return 0.03125 
+    if line == 15: return 0.015625 
+    if line == 16: return 0.0078125 
+    if line == 17: return 0.00390625 
+    if line == 18: return 0.001953125 
+    if line == 19: return 0.0009765625 
+    if line == 20: return 0.00048828125 
 def get_ref_inner_procent(line: int):
     if line == 1: return 40
     if line == 2: return 40
