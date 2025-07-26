@@ -5,6 +5,7 @@ from sqlalchemy import Column, Integer, String, create_engine, Boolean, BigInteg
 import datetime
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 
 engine = create_engine(
@@ -56,15 +57,7 @@ class PayMetadata(Base):
 
 
 app = FastAPI()
-app.add_middleware(HTTPSRedirectMiddleware)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],       # Разрешаем все источники (не безопасно в продакшене!)
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-admin = Admin(app, engine)
+admin = Admin(app, engine, templates_dir="custom_templates")
 
 
 class UserAdmin(ModelView, model=User):
@@ -82,6 +75,4 @@ admin.add_view(CityAdmin)
 admin.add_view(ScheduleAdmin)
 admin.add_view(PayMetadataAdmin)
 
-@app.get("/admin/statics/css/main.css")
-def get_main_css():
-    return "as"
+app.mount("/statics", StaticFiles(directory="./statics"), name="statics")
