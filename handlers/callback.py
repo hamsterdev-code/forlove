@@ -22,7 +22,7 @@ ADMIN_CHAT_ID = -1002837224902
 
 def handler_callback(bot: TeleBot, call: types.CallbackQuery):
     with Session(engine) as session:
-        user = session.execute(select(User).where(User.tg_id == 61886854)).scalar() # call.from_user.id
+        user = session.execute(select(User).where(User.tg_id == call.from_user.id)).scalar() # call.from_user.id
         
         if call.data == "about_project":
             bot.send_message(call.from_user.id, """        
