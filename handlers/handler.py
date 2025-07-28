@@ -29,7 +29,11 @@ def get_user_ref(session: Session, user: User):
     if user.ref == 1:
         return session.execute(select(User).where(User.id == user.ref)).scalar()
     return session.execute(select(User).where(User.tg_id == user.ref)).scalar()
-
+def get_list_refs(session: Session, users: list):
+    l = []
+    for user in users:
+        l.extend(session.execute(select(User).where(User.ref == user.tg_id, User.ref != 1)).scalars().all())
+    return l
 def need_ref_level(line: int):
     if line == 1: return 1
     if line == 2 or line == 3: return 2

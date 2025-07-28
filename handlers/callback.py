@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from db.connect import engine
 from db.models import City, PayMetadata, Schedule, User
 from datetime import datetime
-from handlers.handler import get_user_ref
+from handlers.handler import get_list_refs, get_user_ref
 from yookassa import Configuration, Payment
 import uuid
 
@@ -22,7 +22,7 @@ ADMIN_CHAT_ID = -1002837224902
 
 def handler_callback(bot: TeleBot, call: types.CallbackQuery):
     with Session(engine) as session:
-        user = session.execute(select(User).where(User.tg_id == call.from_user.id)).scalar() # call.from_user.id
+        user = session.execute(select(User).where(User.tg_id == 61886854)).scalar() # call.from_user.id
         
         if call.data == "about_project":
             bot.send_message(call.from_user.id, """        
@@ -439,8 +439,19 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             nicks = """"""
             for ref in ref_users:
                 nicks += f"@{ref.username}\n"
+            
+            users = session.execute(select(User).where(User.ref == user.tg_id)).scalars().all()
+            line_users = []
+            text_line = ""
+            for i in range(0, 20):
+                line_users.append(len(users))
+                if len(users) != 0: text_line += f"Пользователей в {i + 1} линии: {len(users)}\n"
+                users = get_list_refs(session, users)
+            print(line_users)
             bot.send_message(call.from_user.id, f"""
 Посмотрите, как растет ваша команда! Здесь вы можете увидеть участников вашей первой линии и скачать полную структуру, чтобы отслеживать свой прогресс. Создавайте сообщество единомышленников и зарабатывайте вместе!
+
+{text_line}
 
 Ваша 1-я линия:
 {nicks}   
