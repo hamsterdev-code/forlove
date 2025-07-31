@@ -66,7 +66,7 @@ def handler_start(bot: TeleBot, message: types.Message):
                 reg_button = types.KeyboardButton(text="Отправить номер телефона", 
                 request_contact=True)
                 keyboard.add(reg_button)
-                bot.send_message(message.chat.id, "Отправьте номер телефона по кнопке ниже", reply_markup=keyboard)
+                bot.send_message(message.chat.id, "Подвердите свой номер телефона, нажав кнопку, либо введите другой в формате +7XXXXXXXXXX или 8XXXXXXXXXX", reply_markup=keyboard)
                 bot.register_next_step_handler(message, handle_phone, bot)
                 
             
@@ -84,7 +84,7 @@ def handler_city(message: types.Message, bot: TeleBot):
             reg_button = types.KeyboardButton(text="Отправить номер телефона", 
             request_contact=True)
             keyboard.add(reg_button)
-            bot.send_message(message.chat.id, "Отправьте номер телефона по кнопке ниже", reply_markup=keyboard)
+            bot.send_message(message.chat.id, "Подвердите свой номер телефона, нажав кнопку, либо введите другой в формате +7XXXXXXXXXX или 8XXXXXXXXXX", reply_markup=keyboard)
             bot.register_next_step_handler(message, handle_phone, bot)
 
 def handle_phone(message: types.Message, bot: TeleBot):
@@ -99,10 +99,21 @@ def handle_phone(message: types.Message, bot: TeleBot):
                 bot.send_message(message.chat.id, "Вы зарегистрировались в проекте.\n\nПоздравляем с получением бесплатной подписки на 30 суток.Вам Активирован 1 уровень партнерской программы.\n\nПереходите в наш канал: @za_lyubov_igra")
                 handle_start_message(bot, message.chat.id)
     except:
+        if message.text.startswith("8") or message.text.startswith("+7"):
+            phone_number = message.text
+            if len(phone_number) == 12 or len(phone_number) == 11:
+                with Session(engine) as session:
+                    user = get_user(session, message.chat.id)
+                    user.phone = str(phone_number)
+                    user.has_ended = True
+                    session.commit()
+                    bot.send_message(message.chat.id, "Вы зарегистрировались в проекте.\n\nПоздравляем с получением бесплатной подписки на 30 суток.Вам Активирован 1 уровень партнерской программы.\n\nПереходите в наш канал: @za_lyubov_igra")
+                    handle_start_message(bot, message.chat.id)
+                    return
         bot.send_message(message.chat.id, "Номер телефона не получен")
         keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
         reg_button = types.KeyboardButton(text="Отправить номер телефона", 
         request_contact=True)
         keyboard.add(reg_button)
-        bot.send_message(message.chat.id, "Отправьте номер телефона по кнопке ниже", reply_markup=keyboard)
+        bot.send_message(message.chat.id, "Подвердите свой номер телефона, нажав кнопку, либо введите другой в формате +7XXXXXXXXXX или 8XXXXXXXXXX", reply_markup=keyboard)
         bot.register_next_step_handler(message, handle_phone, bot)
