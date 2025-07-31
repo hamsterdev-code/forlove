@@ -65,11 +65,16 @@ def get_users_admin():
         end_users = []
         users = session.execute(select(User)).scalars().all()
         for user in users:
+            try: last_pay = max(session.execute(select(PayMetadata.created_at).where(PayMetadata.has_payed == True, PayMetadata.user_id == user.id)).scalars().all())
+            except: last_pay = 0
             end_users.append({
                 "username": user.username,
                 "name": user.full_name,
                 "tg_id": user.tg_id,
                 "phone": user.phone,
                 "city": user.city,
-                "reg_date": datetime.datetime.utcfromtimestamp(user.created_at).strftime('%Y-%m-%d %H:%M:%S')
+                "reg_date": datetime.datetime.utcfromtimestamp(user.created_at).strftime('%Y-%m-%d %H:%M:%S'),
+                "balance": user.balance,
+                "inner_balance": user.inner_balance,
+                "last_pay": datetime.datetime.utcfromtimestamp(last_pay).strftime('%Y-%m-%d %H:%M:%S') if last_pay != 0 else "Никогда"
             })
