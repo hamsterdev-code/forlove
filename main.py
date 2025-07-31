@@ -1,20 +1,18 @@
 from fastapi import FastAPI
-from sqladmin import Admin, ModelView
-from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import Column, Integer, String, create_engine, Boolean, BigInteger, select
+from sqlalchemy.orm import DeclarativeBase, Session
 import datetime
-from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-
 
 engine = create_engine(
-    "mysql+pymysql://gen_user:hamsterdev1@89.169.45.136:3306/default_db", #   sqlite:///server.db
-    connect_args={"ssl": {"required": True}}  # или {"ssl": True}
+    "mysql+pymysql://gen_user:hamsterdev1@89.169.45.136:3306/default_db", #   
+    connect_args={"ssl": {"ssl_disabled": False}},
 )
+
 
 class Base(DeclarativeBase):
     created_at = Column(Integer, default=datetime.datetime.now(datetime.timezone.utc).timestamp())
+
+
 class User(Base):
     __tablename__ = 'users'
     
@@ -29,6 +27,7 @@ class User(Base):
     has_ended = Column(Boolean, default=False)
     ref = Column(BigInteger)
     ref_level = Column(Integer, default=1)
+
 class City(Base):
     __tablename__ = 'cities'
     
@@ -37,6 +36,7 @@ class City(Base):
     text = Column(String(255))
     agent_account = Column(String(255))
     channel_link = Column(String(255))
+
 class Schedule(Base):
     __tablename__ = 'schedules'
     
@@ -44,6 +44,7 @@ class Schedule(Base):
     name = Column(String(255))
     city = Column(Integer)
     start = Column(String(255))
+
 class PayMetadata(Base):
     __tablename__ = 'pay_metadatas'
     
@@ -56,23 +57,19 @@ class PayMetadata(Base):
     has_payed = Column(Boolean, default=False)
 
 
+
 app = FastAPI()
-admin = Admin(app, engine, templates_dir="custom_templates")
-
-
-class UserAdmin(ModelView, model=User):
-    column_list = [User.id, User.username, User.full_name, User.ref, User.balance, User.inner_balance, User.ref_level, User.city]
-class CityAdmin(ModelView, model=City):
-    column_list = [City.id, City.name]
-class ScheduleAdmin(ModelView, model=Schedule):
-    column_list = [Schedule.id, Schedule.name, Schedule.city, Schedule.start]
-class PayMetadataAdmin(ModelView, model=PayMetadata):
-    column_list = [PayMetadata.id, PayMetadata.user_id, PayMetadata.price, PayMetadata.product, PayMetadata.has_payed]
-
-
-admin.add_view(UserAdmin)
-admin.add_view(CityAdmin)
-admin.add_view(ScheduleAdmin)
-admin.add_view(PayMetadataAdmin)
-
-app.mount("/statics", StaticFiles(directory="./statics"), name="statics")
+@app.post("/admin/users")
+def get_users_admin():
+    with Session(engine) as session:
+        end_users = []
+        users = session.execute(select(User)).scalars().all()
+        for user in users:
+            end_users.append({
+                "username": user.username,
+                "name": user.full_name,
+                "tg_id": user.tg_id,
+                "phone": user.phone,
+                "city": user.city,
+                "reg_date": datetime.datetime.utcfromtimestamp(user.created_at).strftime('%Y-%m-%d %H:%M:%S')
+            })
