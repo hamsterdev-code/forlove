@@ -2,6 +2,15 @@ from sqlalchemy.orm import Session
 from telebot import types, TeleBot
 from db.handlers import create_user, get_user
 from db.connect import engine
+from yookassa import Configuration, Payment
+import uuid
+from db.models import PayMetadata
+
+
+SECRET_API = "live_8sy3urnb4lO3FxsGsaxANT4wC20ZMT97Fb-PAnCD7Sk"
+SHOP_ID = 1124758
+
+Configuration.configure(SHOP_ID, SECRET_API)
 
 def handle_start_message(bot: TeleBot, chat_id: int):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -32,6 +41,82 @@ def handler_start(bot: TeleBot, message: types.Message):
     with Session(engine) as session:
         user = get_user(session, message.from_user.id)
         
+        if " " in message.text:
+            go_code = message.text.split()[1]
+            if go_code == "pay_150" and user != None:
+                with Session(engine) as session:
+                
+                    idempotence_key = str(uuid.uuid4())
+                    
+                    pay_metadata = PayMetadata(
+                        user_id = user.id,
+                        price = 150,
+                        product = "poster",
+                        procent_balance = 50,
+                        inner_balance = 0
+                    )
+                    session.add(pay_metadata)
+                    session.commit()
+                
+                    payment = Payment.create(
+                        {
+                            "id": idempotence_key,
+                            "amount": {
+                                "value": 150,
+                                "currency": "RUB"
+                            },
+                            "confirmation": {
+                                "type": "redirect",
+                                "return_url": "https://t.me/forlove2025_bot"
+                            },
+                            "capture": True,
+                            "description": pay_metadata.id,
+                            "metadata": {
+                                'orderNumber': pay_metadata.id
+                            },
+                            "receipt": {
+                                "customer": {
+                                    "full_name": "Николаев Артем Алексеевич",
+                                    "email": "cfznyjdf13@mail.ru",
+                                    "phone": "79166758299",
+                                    "inn": "170108382176"
+                                },
+                                "items": [
+                                    {
+                                        "description": "Подписка платформы",
+                                        "quantity": "1.00",
+                                        "amount": {
+                                            "value": 150,
+                                            "currency": "RUB"
+                                        },
+                                        "vat_code": "2",
+                                        "payment_mode": "full_payment",
+                                        "payment_subject": "commodity",
+                                        "country_of_origin_code": "RU",
+                                        "product_code": "44 4D 01 00 21 FA 41 00 23 05 41 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 12 00 AB 00",
+                                        "customs_declaration_number": "10714040/140917/0090376",
+                                        "excise": "20.00",
+                                        "supplier": {
+                                            "name": "string",
+                                            "phone": "string",
+                                            "inn": "string"
+                                        }
+                                    },
+                                ]
+                            },
+                        }, 
+                        idempotency_key=idempotence_key
+                    )
+                    
+
+                    # get confirmation url
+                    confirmation_url = payment.confirmation.confirmation_url
+                    markup = types.InlineKeyboardMarkup()
+                    markup.add(types.InlineKeyboardButton("Оплатить создание афиши", url=confirmation_url))
+                    bot.send_message(message.chat.id, 'Вы оплачиваете 150 руб за создание афиши в едином фирменном стиле игры "За любовь". Готовую афишу вас вышлют в чате ведущих в течение 1 суток после оплаты.\nСпасибо.', reply_markup=markup)
+                    
+                    return
+        
         if user and user.has_ended:            
             handle_start_message(bot, message.chat.id)
         else:
@@ -54,7 +139,7 @@ def handler_start(bot: TeleBot, message: types.Message):
                     message.chat.id, 
                     message.from_user.full_name, 
                     message.from_user.username, 
-                    ref)
+                    )
             
             if user.city == "":
                 bot.send_message(message.chat.id, """
