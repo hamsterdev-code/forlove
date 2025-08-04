@@ -57,9 +57,22 @@ class PayMetadata(Base):
     has_payed = Column(Boolean, default=False)
 
 
+def get_user_refs(session: Session, user: User):
+    users = session.execute(select(User).where(User.ref == user.tg_id)).scalars().all()
+    line_users = []
+    for i in range(0, 20):
+        line_users.append(len(users))
+        users = get_list_refs(session, users)
+    return line_users
+def get_list_refs(session: Session, users: list):
+    l = []
+    for user in users:
+        l.extend(session.execute(select(User).where(User.ref == user.tg_id, User.ref != 1)).scalars().all())
+    return l
+
 
 app = FastAPI()
-@app.post("/admin/users")
+@app.get("/admin/users")
 def get_users_admin():
     with Session(engine) as session:
         end_users = []
@@ -67,8 +80,22 @@ def get_users_admin():
         for user in users:
             try: last_pay = max(session.execute(select(PayMetadata.created_at).where(PayMetadata.has_payed == True, PayMetadata.user_id == user.id)).scalars().all())
             except: last_pay = 0
+            
+            total_pays = sum(session.execute(select(PayMetadata.price).where(PayMetadata.has_payed == True, PayMetadata.user_id == user.id)).scalars().all())
+            
+            
+            users = session.execute(select(User).where(User.ref == user.tg_id)).scalars().all()
+            user_refs = []
+            total_structure_buys = 0
+            total_structure_buys += total_pays
+            for i in range(0, 20):
+                user_refs.append(len(users))
+                for u in users:
+                    total_structure_buys += sum(session.execute(select(PayMetadata.price).where(PayMetadata.has_payed == True, PayMetadata.user_id == u.id)).scalars().all())
+                users = get_list_refs(session, users)
+            user_tag = ""
+            #if 
             end_users.append({
-                "username": user.username,
                 "name": user.full_name,
                 "tg_id": user.tg_id,
                 "phone": user.phone,
@@ -76,5 +103,12 @@ def get_users_admin():
                 "reg_date": datetime.datetime.utcfromtimestamp(user.created_at).strftime('%Y-%m-%d %H:%M:%S'),
                 "balance": user.balance,
                 "inner_balance": user.inner_balance,
-                "last_pay": datetime.datetime.utcfromtimestamp(last_pay).strftime('%Y-%m-%d %H:%M:%S') if last_pay != 0 else "Никогда"
+                "last_pay": datetime.datetime.utcfromtimestamp(last_pay).strftime('%Y-%m-%d %H:%M:%S') if last_pay != 0 else "Никогда",
+                "1_line_refs": user_refs[0],
+                "line_refs": sum(user_refs),
+                'total_pays': total_pays,
+                "ref": (session.execute(select(User).where(User.tg_id == user.ref)).scalar()).username,
+                "ref_level": user.ref_level,
+                "total_structure_buys": total_structure_buys
             })
+        return end_users
