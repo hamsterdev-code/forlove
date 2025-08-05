@@ -52,7 +52,6 @@ const UsersTable = ({ setPage }) => {
                     <tr key={user.id}>
                       <td><input type="checkbox" /></td>
                       <td className="icon-cell">
-                        <span className="icon">✏️</span>
                       </td>
                       {userFields.map(f => (
                         <td key={f.key}>{user[f.key]}</td>
