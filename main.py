@@ -191,11 +191,13 @@ def get_pays_admin():
         end_pays = []
         pays = session.execute(select(PayMetadata).where(PayMetadata.has_payed == True)).scalars().all()
         for pay in pays:
+            print(pay.user_id)
             end_pays.append({
                 "id": pay.id,
-                "buyed": {"game": "вед игры", "package": "Пакет", "clubtraining": "орг клуба"}[pay.product],
+                "buyed": {"game": "Ведущий игры", "package": "Пакет", "clubtraining": "Организатор клуба", "subscribe-1": "Подписка на месяц", "subscribe-12": "Подписка на год", }.get(pay.product, pay.product),
                 "from": session.execute(select(User).where(User.id == pay.user_id)).scalar().username,
                 "price": pay.price,
                 "date": datetime.datetime.utcfromtimestamp(pay.created_at).strftime('%Y-%m-%d %H:%M:%S'),
                 "status": "Оплачено"
             })
+    return end_pays

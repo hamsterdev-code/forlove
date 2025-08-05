@@ -1,7 +1,7 @@
 // userFields.js
 export const userFields = [
     { key: "name", label: "Имя" },
-    { key: "tg_id", label: "Тг. айди" },
+    { key: "tg_id", label: "Тг. ID" },
     { key: "phone", label: "Телефон" },
     { key: "city", label: "Город" },
     { key: "reg_date", label: "Дата рег." },
