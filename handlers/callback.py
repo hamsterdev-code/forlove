@@ -683,4 +683,5 @@ def transfer_balance_1(message: types.Message, bot: TeleBot):
         session.add(transfer)
         session.commit()
         bot.send_message(message.chat.id, f"Баланс успешно отправился '{balance_get_user.full_name}'")
-
+#def transfer_balance_2(message: types.Message, bot: TeleBot):
+    
