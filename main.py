@@ -3,7 +3,6 @@ from sqlalchemy.orm import DeclarativeBase, Session, joinedload, selectinload, s
 from fastapi import Depends, FastAPI
 from sqlalchemy.orm import Session
 import datetime
-from typing import Generator
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, FileResponse
 
@@ -73,7 +72,7 @@ class BalanceTransfer(Base):
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Зависимость FastAPI для получения сессии
-def get_db() -> Generator[Session, None, None]:
+def get_db():
     db = SessionLocal()
     try:
         yield db
