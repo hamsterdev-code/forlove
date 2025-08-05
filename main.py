@@ -1,7 +1,11 @@
-from fastapi import FastAPI
-from sqlalchemy import Column, Integer, String, create_engine, Boolean, BigInteger, select
-from sqlalchemy.orm import DeclarativeBase, Session
+from sqlalchemy import Column, Integer, String, create_engine, Boolean, BigInteger, func, select
+from sqlalchemy.orm import DeclarativeBase, Session, joinedload, selectinload, sessionmaker, relationship, backref
+from fastapi import Depends, FastAPI
+from sqlalchemy.orm import Session
 import datetime
+from typing import Generator
+from fastapi.middleware.cors import CORSMiddleware
+
 
 engine = create_engine(
     "mysql+pymysql://gen_user:hamsterdev1@89.169.45.136:3306/default_db", #   
@@ -56,45 +60,110 @@ class PayMetadata(Base):
     inner_balance = Column(Integer)
     has_payed = Column(Boolean, default=False)
 
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-def get_user_refs(session: Session, user: User):
-    users = session.execute(select(User).where(User.ref == user.tg_id)).scalars().all()
-    line_users = []
-    for i in range(0, 20):
-        line_users.append(len(users))
-        users = get_list_refs(session, users)
-    return line_users
-def get_list_refs(session: Session, users: list):
-    l = []
-    for user in users:
-        l.extend(session.execute(select(User).where(User.ref == user.tg_id, User.ref != 1)).scalars().all())
-    return l
+# Зависимость FastAPI для получения сессии
+def get_db() -> Generator[Session, None, None]:
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 app = FastAPI()
+
+app.add_middleware(
+  CORSMiddleware,
+  allow_origins = ["*"],
+  allow_methods = ["*"],
+  allow_headers = ["*"]
+)
+
+
 @app.get("/admin/users")
 def get_users_admin():
     with Session(engine) as session:
-        end_users = []
         users = session.execute(select(User)).scalars().all()
+
+        user_ids = [user.id for user in users]
+        user_tg_ids = [user.tg_id for user in users]
+
+        # Словари для быстрого доступа
+        user_by_tg_id = {user.tg_id: user for user in users}
+        user_by_id = {user.id: user for user in users}
+
+        # Получаем все оплаты всех пользователей одной пачкой
+        pay_rows = session.execute(
+            select(
+                PayMetadata.user_id,
+                PayMetadata.created_at,
+                PayMetadata.price,
+                PayMetadata.product,
+                PayMetadata.has_payed
+            ).where(PayMetadata.user_id.in_(user_ids))
+        ).all()
+
+        # Строим индексы по user_id
+        pays_by_user = {}
+        for row in pay_rows:
+            pays_by_user.setdefault(row.user_id, []).append(row)
+
+        # Словарь: tg_id -> список прямых рефералов
+        refs_map = {}
         for user in users:
-            try: last_pay = max(session.execute(select(PayMetadata.created_at).where(PayMetadata.has_payed == True, PayMetadata.user_id == user.id)).scalars().all())
-            except: last_pay = 0
-            
-            total_pays = sum(session.execute(select(PayMetadata.price).where(PayMetadata.has_payed == True, PayMetadata.user_id == user.id)).scalars().all())
-            
-            
-            users = session.execute(select(User).where(User.ref == user.tg_id)).scalars().all()
-            user_refs = []
-            total_structure_buys = 0
-            total_structure_buys += total_pays
-            for i in range(0, 20):
-                user_refs.append(len(users))
-                for u in users:
-                    total_structure_buys += sum(session.execute(select(PayMetadata.price).where(PayMetadata.has_payed == True, PayMetadata.user_id == u.id)).scalars().all())
-                users = get_list_refs(session, users)
-            user_tag = ""
-            #if 
+            if user.ref:
+                refs_map.setdefault(user.ref, []).append(user)
+
+        def get_structure_and_sum(start_user, depth=20):
+            visited = set()
+            total_sum = 0
+            queue = [(start_user.tg_id, 0)]
+            while queue:
+                ref_tg_id, level = queue.pop(0)
+                if level >= depth:
+                    continue
+                for ref_user in refs_map.get(ref_tg_id, []):
+                    if ref_user.id in visited:
+                        continue
+                    visited.add(ref_user.id)
+                    for p in pays_by_user.get(ref_user.id, []):
+                        if p.has_payed:
+                            total_sum += p.price
+                    queue.append((ref_user.tg_id, level + 1))
+            return len(visited), total_sum
+
+        end_users = []
+
+        for user in users:
+            user_pays = pays_by_user.get(user.id, [])
+            paid_pays = [p for p in user_pays if p.has_payed]
+
+            try:
+                last_pay = max([p.created_at for p in paid_pays]) if paid_pays else 0
+            except:
+                last_pay = 0
+
+            total_pays = sum([p.price for p in paid_pays])
+
+            first_line_refs = refs_map.get(user.tg_id, [])
+            total_refs, structure_sum = get_structure_and_sum(user)
+
+            # Метки
+            tags = []
+            if any(p.product == "clubtraining" for p in user_pays):
+                tags.append("орг клуба")
+            if any(p.product == "game" for p in user_pays):
+                tags.append("вед игры")
+            if any(p.product == "package" for p in user_pays):
+                tags.append("сетевик")
+            if len(tags) == 0:
+                tags.append("участник")
+
+            # Пригласитель
+            ref_user = user_by_tg_id.get(user.ref)
+            ref_username = ref_user.username if ref_user else None
+
             end_users.append({
                 "name": user.full_name,
                 "tg_id": user.tg_id,
@@ -104,11 +173,13 @@ def get_users_admin():
                 "balance": user.balance,
                 "inner_balance": user.inner_balance,
                 "last_pay": datetime.datetime.utcfromtimestamp(last_pay).strftime('%Y-%m-%d %H:%M:%S') if last_pay != 0 else "Никогда",
-                "1_line_refs": user_refs[0],
-                "line_refs": sum(user_refs),
+                "1_line_refs": len(first_line_refs),
+                "line_refs": total_refs,
                 'total_pays': total_pays,
-                "ref": (session.execute(select(User).where(User.tg_id == user.ref)).scalar()).username,
+                "ref": ref_username,
                 "ref_level": user.ref_level,
-                "total_structure_buys": total_structure_buys
+                "total_structure_buys": structure_sum + total_pays,
+                "user_tag": ", ".join(tags)
             })
+
         return end_users

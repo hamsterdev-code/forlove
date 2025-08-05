@@ -17,11 +17,9 @@ body {
 .admin-wrapper {
     display: flex;
     min-height: 100vh;
-    /* было: OK */
     height: 100%;
     background: #f6f8fa;
 }
-
 
 .sidebar {
     width: 240px;
@@ -58,16 +56,15 @@ body {
     flex-direction: column;
     width: 100%;
     background: #f6f8fa;
-    /* важно: гарантирует фон */
     min-height: 100vh;
+    overflow: hidden;
 }
-
-
 
 .content-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    
 }
 
 .header-actions button {
@@ -112,25 +109,31 @@ body {
 }
 
 .table-container {
-    margin-top: 20px;
+    margin-top: 10px;
     overflow-x: auto;
+    overflow-y: auto;
+    flex-grow: 1;
     width: 100%;
-    flex: 1;
+    max-height: calc(100vh - 125px); /* адаптируй под реальную высоту заголовка/поиска */
+}
+.loading_text{
+    padding: 60px;
+    font-size: 24px;
 }
 
 table {
     border-collapse: collapse;
     width: 100%;
-    min-width: 900px;
+    min-width: 900px; /* даст горизонтальный скролл при множестве колонок */
     background: white;
 }
-
 
 th,
 td {
     padding: 12px;
     border-bottom: 1px solid #e5e7eb;
     text-align: left;
+    white-space: nowrap; /* предотвращает перенос текста и улучшает скролл */
 }
 
 th:first-child,
