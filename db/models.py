@@ -51,6 +51,15 @@ class PayMetadata(Base):
     inner_balance = Column(Integer)
     has_payed = Column(Boolean, default=False)
 
+class BalanceTransfer(Base):
+    __tablename__ = "balance_transafers"
+    
+    id = Column(Integer, primary_key=True)
+    to_user_id = Column(Integer)
+    from_user_id = Column(Integer)
+    money = Column(Integer)
+    
+
 
 def init_db():
     Base.metadata.create_all(engine)

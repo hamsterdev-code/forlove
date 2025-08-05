@@ -2,7 +2,7 @@ from sqlalchemy import select
 from telebot import TeleBot, types
 from sqlalchemy.orm import Session
 from db.connect import engine
-from db.models import City, PayMetadata, Schedule, User
+from db.models import BalanceTransfer, City, PayMetadata, Schedule, User
 from datetime import datetime
 from handlers.handler import get_list_refs, get_user_ref
 from yookassa import Configuration, Payment
@@ -675,6 +675,12 @@ def transfer_balance_1(message: types.Message, bot: TeleBot):
         balance_get_user.balance += balance
         session.commit()
         user.balance = 0
+        transfer = BalanceTransfer(
+            from_user_id = user.id,
+            to_user_id = balance_get_user.id,
+            money = balance
+        )
+        session.add(transfer)
         session.commit()
         bot.send_message(message.chat.id, f"Баланс успешно отправился '{balance_get_user.full_name}'")
 
