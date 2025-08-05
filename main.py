@@ -183,3 +183,19 @@ def get_users_admin():
             })
 
         return end_users
+    
+
+@app.get("/admin/pays")
+def get_pays_admin():
+    with Session(engine) as session:
+        end_pays = []
+        pays = session.execute(select(PayMetadata).where(PayMetadata.has_payed == True)).scalars().all()
+        for pay in pays:
+            end_pays.append({
+                "id": pay.id,
+                "buyed": {"game": "вед игры", "package": "Пакет", "clubtraining": "орг клуба"}[pay.product],
+                "from": session.execute(select(User).where(User.id == pay.user_id)).scalar().username,
+                "price": pay.price,
+                "date": datetime.datetime.utcfromtimestamp(pay.created_at).strftime('%Y-%m-%d %H:%M:%S'),
+                "status": "Оплачено"
+            })
