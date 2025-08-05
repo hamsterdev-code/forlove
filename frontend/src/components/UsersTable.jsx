@@ -28,6 +28,7 @@ const UsersTable = ({ setPage }) => {
         <ul>
           <li className="active">Пользователи</li>
           <li onClick={() => { setPage("pays") }}>Транзакции</li>
+          <li onClick={() => { setPage("transfers") }}>Переводы</li>
         </ul>
       </aside>
       <main className="content">

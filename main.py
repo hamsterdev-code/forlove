@@ -5,6 +5,8 @@ from sqlalchemy.orm import Session
 import datetime
 from typing import Generator
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, FileResponse
+
 
 
 engine = create_engine(
@@ -59,6 +61,14 @@ class PayMetadata(Base):
     procent_balance = Column(Integer)
     inner_balance = Column(Integer)
     has_payed = Column(Boolean, default=False)
+    
+class BalanceTransfer(Base):
+    __tablename__ = "balance_transafers"
+    
+    id = Column(Integer, primary_key=True)
+    to_user_id = Column(Integer)
+    from_user_id = Column(Integer)
+    money = Column(Integer)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -79,7 +89,6 @@ app.add_middleware(
   allow_methods = ["*"],
   allow_headers = ["*"]
 )
-
 
 @app.get("/admin/users")
 def get_users_admin():
@@ -191,7 +200,6 @@ def get_pays_admin():
         end_pays = []
         pays = session.execute(select(PayMetadata).where(PayMetadata.has_payed == True)).scalars().all()
         for pay in pays:
-            print(pay.user_id)
             end_pays.append({
                 "id": pay.id,
                 "buyed": {"game": "Ведущий игры", "package": "Пакет", "clubtraining": "Организатор клуба", "subscribe-1": "Подписка на месяц", "subscribe-12": "Подписка на год", }.get(pay.product, pay.product),
@@ -201,3 +209,28 @@ def get_pays_admin():
                 "status": "Оплачено"
             })
     return end_pays
+
+@app.get("/admin/transfers")
+def get_transfers_admin():
+    with Session(engine) as session:
+        end_transfers = []
+        transfers = session.execute(select(BalanceTransfer)).scalars().all()
+        for transfer in transfers:
+            end_transfers.append({
+                "id": transfer.id,
+                "from": session.execute(select(User).where(User.id == transfer.from_user_id)).scalar().username,
+                "to": session.execute(select(User).where(User.id == transfer.to_user_id)).scalar().username,
+                "money": transfer.money,
+                "date": datetime.datetime.utcfromtimestamp(transfer.created_at).strftime('%Y-%m-%d %H:%M:%S'),
+            })
+    return end_transfers
+
+
+@app.get("/")
+def get_index():
+    file_inner = open("./build/index.html", 'r').read()
+    return HTMLResponse(content=file_inner)
+
+@app.get("/assets/{file}")
+def get_asset_file(file):
+    return FileResponse(path=f"./build/assets/{file}")
