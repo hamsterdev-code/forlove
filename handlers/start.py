@@ -113,7 +113,11 @@ def handler_start(bot: TeleBot, message: types.Message):
                     confirmation_url = payment.confirmation.confirmation_url
                     markup = types.InlineKeyboardMarkup()
                     markup.add(types.InlineKeyboardButton("Оплатить создание афиши", url=confirmation_url))
-                    bot.send_message(message.chat.id, 'Вы оплачиваете 150 руб за создание афиши в едином фирменном стиле игры "За любовь". Готовую афишу вас вышлют в чате ведущих в течение 1 суток после оплаты.\nСпасибо.', reply_markup=markup)
+                    bot.send_message(message.chat.id, '''
+Вы оплачиваете 150 руб за создание афиши в едином фирменном стиле игры "За любовь". 
+Готовую афишу вышлем Вам в чате ведущих в течение 1 суток после оплаты.
+
+Спасибо , что поддерживаете нас и наш фирменный стиль ❤️''', reply_markup=markup)
                     
                     return
         
