@@ -142,8 +142,9 @@ def handler_start(bot: TeleBot, message: types.Message):
                     session, 
                     message.chat.id, 
                     message.from_user.full_name, 
-                    message.from_user.username, 
-                    )
+                    message.from_user.username,
+                    ref
+                )
             
             if user.city == "":
                 bot.send_message(message.chat.id, """
