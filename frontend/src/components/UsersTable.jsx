@@ -43,7 +43,7 @@ const UsersTable = ({ setPage }) => {
                   <tr>
                     <th><input type="checkbox" /></th>
                     <th></th>
-                    {userFields.map(f => (
+                    {[...userFields, { key: "pays", label: "Покупки" },].map(f => (
                       <th key={f.key}>{f.label}</th>
                     ))}
                   </tr>
@@ -57,8 +57,16 @@ const UsersTable = ({ setPage }) => {
                       {userFields.map(f => (
                         <td key={f.key}>{user[f.key]}</td>
                       ))}
+                      <td>
+                        <select name="selectedFruit">
+                          {user.purchases.map(purchase=>(
+                            <option value={purchase}>{purchase}</option>
+                          ))}
+                        </select>
+                      </td>
                     </tr>
                   ))}
+
                 </tbody>
               </table>
             </div>

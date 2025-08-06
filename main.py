@@ -159,11 +159,11 @@ def get_users_admin():
 
             # Метки
             tags = []
-            if any(p.product == "clubtraining" for p in user_pays):
+            if any(p.product == "clubtraining" for p in paid_pays):
                 tags.append("орг клуба")
-            if any(p.product == "game" for p in user_pays):
+            if any(p.product == "game" for p in paid_pays):
                 tags.append("вед игры")
-            if any(p.product == "package" for p in user_pays):
+            if any(p.product == "package" for p in paid_pays):
                 tags.append("сетевик")
             if len(tags) == 0:
                 tags.append("участник")
@@ -171,9 +171,25 @@ def get_users_admin():
             # Пригласитель
             ref_user = user_by_tg_id.get(user.ref)
             ref_username = ref_user.username if ref_user else None
-
+            
+            total_purchases = {
+                "subscribe-1": "Подписка на месяц",
+                "subscribe-12": "Подписка на год",
+                "poster": "Афиша",
+                "package": "Пакет",
+                "game": "Ведущий игры",
+                "clubtraining": "Орг. клуба",
+            }
+            
+            purchases = [
+                    f"{total_purchases.get(p.product)} {p.price}₽ {datetime.datetime.utcfromtimestamp(p.created_at).strftime('%d.%m.%Y')}"
+                    for p in paid_pays
+                ]
+            if len(purchases) == 0:
+                purchases.append("Ничего")
             end_users.append({
                 "name": user.full_name,
+                "username": user.username,
                 "tg_id": user.tg_id,
                 "phone": user.phone,
                 "city": user.city,
@@ -187,7 +203,8 @@ def get_users_admin():
                 "ref": ref_username,
                 "ref_level": user.ref_level,
                 "total_structure_buys": structure_sum + total_pays,
-                "user_tag": ", ".join(tags)
+                "user_tag": ", ".join(tags),
+                "purchases": purchases
             })
 
         return end_users

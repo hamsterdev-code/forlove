@@ -1,6 +1,7 @@
 // userFields.js
 export const userFields = [
     { key: "name", label: "Имя" },
+    { key: "username", label: "Ник ТГ" },
     { key: "tg_id", label: "Тг. ID" },
     { key: "phone", label: "Телефон" },
     { key: "city", label: "Город" },
@@ -13,6 +14,7 @@ export const userFields = [
     { key: "ref", label: "Спонсор" },
     { key: "ref_level", label: "Уроверь реф." },
     { key: "total_structure_buys", label: "Оборот его структуры" },
+    { key: "last_pay", label: "Дата последней покупки" },
     { key: "user_tag", label: "Роль" },
   ];
   
