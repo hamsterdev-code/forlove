@@ -24,7 +24,7 @@ const UsersTable = ({ setPage }) => {
   return (
     <div className="admin-wrapper">
       <aside className="sidebar">
-        <h2>Гл. Админка</h2>
+        <h2 className="title">Гл. Админка</h2>
         <ul>
           <li className="active">Пользователи</li>
           <li onClick={() => { setPage("pays") }}>Транзакции</li>
