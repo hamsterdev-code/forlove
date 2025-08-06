@@ -556,11 +556,12 @@ P.S. Программа и время может меняться по усмо�
         # РЕФЕРАЛЬНАЯ СИСТЕМА
         elif call.data == "ref_program":
             markup = types.InlineKeyboardMarkup()
+            button5 = types.InlineKeyboardButton("Поделиться ссылкой", url=f"https://t.me/share/url?url=https://t.me/forlove2025_bot?start={call.from_user.id}")
             button = types.InlineKeyboardButton("Моя структура", callback_data="ref_structure")
             button2 = types.InlineKeyboardButton("Перевод средств", callback_data="transfer_balance")
             button3 = types.InlineKeyboardButton("Заявка на вывод", callback_data="return_balance")
             button4 = types.InlineKeyboardButton("Сменить спонсора", callback_data="change_sponsor")
-            markup.add(button, button2, button3, button4, row_width=1)
+            markup.add(button5, button, button2, button3, button4, row_width=1)
             
             bot.send_message(call.from_user.id, f"""
 Зарабатывайте, приглашая друзей в проект 'За любовь'! Наша реферальная программа позволяет вам получать доход от подписок, игр и со всех других продуктов, которыми делятся ваши приглашенные. Чем больше ваша команда, тем выше ваш заработок — до 20 уровней партнерской сети. Получите свою уникальную ссылку, следите за балансом и стройте свою структуру уже сегодня!
@@ -670,7 +671,7 @@ def transfer_balance_1(message: types.Message, bot: TeleBot):
             bot.send_message(message.chat.id, "Пользователь не найден")
         else:
             bot.send_message(message.chat.id, f"Введите сумму которую вы хотите перевести к @{balance_get_user.username}")
-            bot.register_next_step_handler(transfer_balance_2, bot, message.text[1:])
+            bot.register_next_step_handler(message, transfer_balance_2, bot, message.text[1:])
 def transfer_balance_2(message: types.Message, bot: TeleBot, username: str):
     with Session(engine) as session:
         balance_get_user = session.execute(select(User).where(User.username == username)).scalar()

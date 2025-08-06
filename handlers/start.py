@@ -52,7 +52,7 @@ def handler_start(bot: TeleBot, message: types.Message):
                         user_id = user.id,
                         price = 150,
                         product = "poster",
-                        procent_balance = 50,
+                        procent_balance = 0,
                         inner_balance = 0
                     )
                     session.add(pay_metadata)
