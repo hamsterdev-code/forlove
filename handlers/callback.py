@@ -656,6 +656,7 @@ def change_sponsor_2(message: types.Message, bot: TeleBot, new_sponsor: str):
                 
     else:
         bot.send_message(message.chat.id, "Изменение спонсора отменено")
+
 def transfer_balance_1(message: types.Message, bot: TeleBot):
     if message.text == "На главную": 
         handle_start_message(bot, message.chat.id)
@@ -667,21 +668,31 @@ def transfer_balance_1(message: types.Message, bot: TeleBot):
         balance_get_user = session.execute(select(User).where(User.username == message.text[1:])).scalar()
         if balance_get_user == None:
             bot.send_message(message.chat.id, "Пользователь не найден")
-            #bot.send_message(message.chat.id, f"Вы можете перевести средства с бонусного баланса. Напишите ник кому вы хотите перевести (в формате @ник) или напишите 'Отмена' чтобы отменить отправку баланса")
-            #bot.register_next_step_handler(message, change_sponsor_1, bot)
-        
+        else:
+            bot.send_message(message.chat.id, f"Введите сумму которую вы хотите перевести к @{balance_get_user.username}")
+            bot.register_next_step_handler(transfer_balance_2, bot, message.text[1:])
+def transfer_balance_2(message: types.Message, bot: TeleBot, username: str):
+    with Session(engine) as session:
+        balance_get_user = session.execute(select(User).where(User.username == username)).scalar()
         user = session.execute(select(User).where(User.tg_id == message.from_user.id)).scalar()
-        balance = user.balance
-        balance_get_user.balance += balance
+        try: 
+            number = int(message.text)
+            if user.balance < number: 
+                bot.send_message(message.chat.id, "На балансе меньше введеной суммы")
+                return
+        except: bot.send_message(message.chat.id, "На балансе меньше введеной суммы")
+        balance_get_user.balance += number
+        user.balance -= number
         session.commit()
-        user.balance = 0
         transfer = BalanceTransfer(
             from_user_id = user.id,
             to_user_id = balance_get_user.id,
-            money = balance
+            money = number
         )
         session.add(transfer)
         session.commit()
-        bot.send_message(message.chat.id, f"Баланс успешно отправился '{balance_get_user.full_name}'")
-#def transfer_balance_2(message: types.Message, bot: TeleBot):
-    
+        bot.send_message(message.chat.id, f"Успешно отправлено {number} ₽ на баланс @{balance_get_user.username}")
+        bot.send_message(balance_get_user.tg_id, f"Вы получили {number} ₽ на баланс от @{user.username}")
+
+
+# ₽
