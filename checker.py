@@ -75,10 +75,12 @@ def ref_handler(session: Session, user: User, pay_metadata: PayMetadata):
         if user_ref.ref_level >= need_level: 
             user_ref.balance += pay_moneys # начисление денег
             user_ref.inner_balance += inner_pay_moneys # начисление денег
-            bot.send_message(user_ref.tg_id, f"""                   
-Приглашенный вами пользователь @{user.username} купил продукт
-Сумма: {pay_metadata.price} ₽
-Вы получили: {pay_moneys} ₽""")
+            try:
+                bot.send_message(user_ref.tg_id, f"""                   
+    Приглашенный вами пользователь @{user.username} купил продукт
+    Сумма: {pay_metadata.price} ₽
+    Вы получили: {pay_moneys} ₽""")
+            except: pass
         else:
             admin_user.inner_balance += inner_pay_moneys # начисление денег
             admin_user.balance += pay_moneys
@@ -141,6 +143,7 @@ def checker():
                 user = session.execute(select(User).where(User.id == pay_metadata.user_id)).scalar()
                 
                 pay_metadata.has_payed = True
+                session.commit()
                 
                 if pay_metadata.product == "package":
                     if pay_metadata.price == 5000: 
