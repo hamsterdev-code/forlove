@@ -29,7 +29,7 @@ def handle_start_message(bot: TeleBot, chat_id: int):
     
     markup.add(button1, button2, button3, button6, button5, button4, row_width=2)
     button8 = types.InlineKeyboardButton("Вопросы и поддержка", callback_data="support")   
-    button7 = types.InlineKeyboardButton("Рефералка и баланс", callback_data="ref_program")   
+    button7 = types.InlineKeyboardButton("Реферальная программа и баланс", callback_data="ref_program")   
 
     markup.add(button7, button8, row_width=1)
     bot.send_message(chat_id, "Проект 'За любовь' — это движение, которое объединяет людей, стремящихся к осознанным отношениям, личностному росту и вдохновляющему сообществу.\n\nЧерез наши игры, курсы, клубы знакомств и партнерскую программу вы найдете новые возможности для счастья и успеха. Выберите раздел, чтобы узнать больше:", reply_markup=markup)
@@ -145,6 +145,9 @@ def handler_start(bot: TeleBot, message: types.Message):
                     message.from_user.username,
                     ref
                 )
+                
+                if ref != 1:
+                    bot.send_message(ref, f"Пользователь @{user.username} зарегистрировался по вашей ссылке")
             
             if user.city == "":
                 bot.send_message(message.chat.id, """
