@@ -1,0 +1,1 @@
+export const BASE_URL = "https://hamsterdev-code-forlove-3a4e.twc1.net"
