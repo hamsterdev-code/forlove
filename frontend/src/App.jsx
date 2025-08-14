@@ -1,18 +1,33 @@
-import { useState } from 'react'
-import UsersTable from "./components/UsersTable";
-import PaysTable from './components/PaysTable';
-import TransfersTable from './components/TransfersTable';
+import React, { useState } from 'react';
+import UserTree from './UserTree';
 
 function App() {
-  const [page, setPage] = useState("users");
+  const [tgId, setTgId] = useState('');
+  const [submitted, setSubmitted] = useState(null);
+
+  const onSubmit = (e) => {
+    e.preventDefault();
+    if (!tgId) return;
+    setSubmitted(tgId);
+  };
 
   return (
-    <>
-      {page === "users" && <UsersTable setPage={setPage} />}
-      {page === "pays" && <PaysTable setPage={setPage} />}
-      {page === "transfers" && <TransfersTable setPage={setPage} />}
-    </>
+    <div className='main_app'>
+      <h2>Дерево пользователей</h2>
+      <form onSubmit={onSubmit} style={{ marginBottom: 12 }}>
+        <input
+          placeholder="Введите tg_id (число)"
+          value={tgId}
+          onChange={(e) => setTgId(e.target.value)}
+          style={{ padding: 8, width: 240 }}
+        />
+        <button style={{ marginLeft: 8, padding: '8px 12px' }}>Показать</button>
+      </form>
+
+      {submitted && <UserTree tgId={submitted} apiBase="http://localhost:8000" />}
+      {!submitted && <div>Введите tg_id и нажмите "Показать".</div>}
+    </div>
   );
 }
 
-export default App
+export default App;
