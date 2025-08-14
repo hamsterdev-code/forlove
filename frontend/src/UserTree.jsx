@@ -1,49 +1,105 @@
 import React, { useEffect, useRef, useState } from "react";
 import Tree from "react-d3-tree";
 
-// Трансформируем ответ бэка -> формат react-d3-tree.
-// name оставляем пустым, чтобы не рисовался дефолтный текст под нодой.
+// Конвертация данных в формат дерева
 function transformNode(node) {
   return {
-    name: node.username || `tg_${node.tg_id}`,                           // скрываем дефолтный label
+    name: node.username || `tg_${node.tg_id}`,
     children: (node.children || []).map(transformNode),
   };
 }
 
-// Кастомный HTML-лейбл с белым фоном.
-// pointerEvents: 'none' — чтобы клики шли по ноде (сворачивание/разворачивание).
+// HTML-лейбл
 const CustomLabel = ({ nodeData }) => {
-  console.log(nodeData);
   return (
-    <svg
+    <div
       style={{
         background: "#fff",
-        padding: "2px 6px",
-        borderRadius: 4,
-        boxShadow: "0 0 0 1px rgba(0,0,0,0.25)",
+        padding: "4px 8px",
+        borderRadius: 6,
+        boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
         fontSize: 12,
         fontWeight: 600,
         whiteSpace: "nowrap",
-        pointerEvents: "none",
-        transform: "translateY(-10px)", // поднять текст на 10px
+        transform: "translateY(-10px)",
       }}
     >
-      {nodeData.__label}
-    </svg>
-  )
+      {nodeData.name}
+    </div>
+  );
+};
 
-
+// Модалка
+const Modal = ({ username, onClose }) => {
+  if (!username) return null;
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        backgroundColor: "rgba(0,0,0,0.5)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1000,
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: "#fff",
+          padding: "20px 30px",
+          borderRadius: 10,
+          boxShadow: "0 4px 15px rgba(0,0,0,0.4)",
+          minWidth: 250,
+          animation: "fadeIn 0.2s ease-out",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 style={{ margin: "0 0 10px", fontSize: 18 }}>Информация</h3>
+        <p style={{ margin: 0, fontSize: 16 }}>
+          <strong>username:</strong> {username}
+        </p>
+        <button
+          onClick={onClose}
+          style={{
+            marginTop: 15,
+            padding: "6px 12px",
+            background: "#007bff",
+            color: "#fff",
+            border: "none",
+            borderRadius: 6,
+            cursor: "pointer",
+          }}
+        >
+          Закрыть
+        </button>
+      </div>
+    </div>
+  );
 };
 
 export default function UserTree({ tgId, apiBase }) {
   const [treeData, setTreeData] = useState(null);
+  const [selectedUsername, setSelectedUsername] = useState(null);
   const treeRef = useRef(null);
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const el = treeRef.current;
     if (el) setTranslate({ x: el.offsetWidth / 2, y: 80 });
+    setInterval(() => {
+      const labels = document.querySelectorAll(".rd3t-label__title")
+      for (let i = 0; i < labels.length; i++) {
+        const element = labels[i];
+        element.onclick = function () {
+          console.log(element.textContent);
+          alert("alert");
+        }
+      }
+    }, 1000);
   }, [treeRef.current]);
+
 
   useEffect(() => {
     (async () => {
@@ -51,45 +107,37 @@ export default function UserTree({ tgId, apiBase }) {
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       setTreeData(transformNode(data));
-    })().catch((e) => {
-      console.error(e);
-      setTreeData(null);
-    });
+    })();
   }, [tgId, apiBase]);
 
   if (!treeData) return <div>Загрузка дерева…</div>;
 
-  // Размер и позиция foreignObject для лейбла (ширину можно увеличить при длинных именах)
-  const LABEL_W = 140;
-  const LABEL_H = 28;
+  const LABEL_W = 160;
+  const LABEL_H = 30;
 
   return (
-    <div
-      ref={treeRef}
-      style={{ width: "100%", height: 700, border: "1px solid #eee", overflow: "hidden" }}
-    >
-      <Tree
-        data={treeData}
-        translate={translate}
-        orientation="vertical"
-        pathFunc="elbow"
-        collapsible={true}          // сворачивание/разворачивание
-        initialDepth={3}            // раскрыты только первые уровни
-        nodeSize={{ x: 160, y: 120 }}
-        separation={{ siblings: 1.5, nonSiblings: 2 }}
-        zoomable={true}
-        scaleExtent={{ min: 0.1, max: 2 }}
-        allowForeignObjects={true}  // ВАЖНО: разрешаем HTML внутри SVG
-        nodeLabelComponent={{
-          render: <CustomLabel />,
-          foreignObjectWrapper: {
-            x: -LABEL_W / 2, // центрируем над нодой
-            y: -LABEL_H - 14, // базовое поднятие над кружком (чтобы не налезало)
-            width: LABEL_W,
-            height: LABEL_H,
-          },
-        }}
-      />
-    </div>
+    <>
+      <div
+        ref={treeRef}
+        style={{ width: "100%", height: 700, border: "1px solid #eee" }}
+      >
+        <Tree
+          data={treeData}
+          translate={translate}
+          orientation="vertical"
+          pathFunc="elbow"
+          collapsible={true}          // сворачивание/разворачивание
+          initialDepth={3}            // раскрыты только первые уровни
+          nodeSize={{ x: 160, y: 120 }}
+          separation={{ siblings: 1.5, nonSiblings: 2 }}
+          zoomable={true}
+          scaleExtent={{ min: 0.1, max: 2 }}
+          allowForeignObjects={true}  // ВАЖНО: разрешаем HTML внутри SVG
+        />
+      </div>
+
+      {/* Модалка */}
+      <Modal username={selectedUsername} onClose={() => setSelectedUsername(null)} />
+    </>
   );
 }

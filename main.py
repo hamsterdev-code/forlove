@@ -2,9 +2,9 @@ from typing import List, Dict, Any
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from sqlalchemy import create_engine, text, select
-from sqlalchemy.orm import sessionmaker, Session
-
+from sqlalchemy import create_engine, text, select, Column, Integer, String, BigInteger, Boolean
+from sqlalchemy.orm import sessionmaker, Session, DeclarativeBase
+import datetime
 DATABASE_URL = "mysql+pymysql://gen_user:hamsterdev1@89.169.45.136:3306/default_db"
 
 # Подключение к MySQL
@@ -30,6 +30,53 @@ class NodeOut(BaseModel):
 
     class Config:
         orm_mode = True
+
+class Base(DeclarativeBase):
+    created_at = Column(Integer, default=datetime.datetime.now(datetime.timezone.utc).timestamp())
+
+
+class User(Base):
+    __tablename__ = 'users'
+    
+    id = Column(Integer, primary_key=True)
+    tg_id = Column(BigInteger)
+    username = Column(String(255))
+    full_name = Column(String(255))
+    phone = Column(String(255))
+    city = Column(String(255))
+    balance = Column(Integer, default=0)
+    inner_balance = Column(Integer, default=0)
+    has_ended = Column(Boolean, default=False)
+    ref = Column(BigInteger)
+    ref_level = Column(Integer, default=1)
+
+class City(Base):
+    __tablename__ = 'cities'
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255))
+    text = Column(String(255))
+    agent_account = Column(String(255))
+    channel_link = Column(String(255))
+
+class Schedule(Base):
+    __tablename__ = 'schedules'
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255))
+    city = Column(Integer)
+    start = Column(String(255))
+
+class PayMetadata(Base):
+    __tablename__ = 'pay_metadatas'
+    
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer)
+    price = Column(Integer)
+    product = Column(String(255))
+    procent_balance = Column(Integer)
+    inner_balance = Column(Integer)
+    has_payed = Column(Boolean, default=False)
 
 NodeOut.update_forward_refs()
 
@@ -162,14 +209,14 @@ def get_user_structure(tg_id: int, db=Depends(get_db)):
     return root_node
 
 
-@app.get("/users/{tg_id}/data")
-def get_single_user(tg_id: int):
+@app.get("/users/{username}/data")
+def get_single_user(username: str):
     with Session(engine) as session:
         users = session.execute(select(User)).scalars().all()
         user_ids = [u.id for u in users]
         user_by_tg_id = {u.tg_id: u for u in users}
 
-        target_user = user_by_tg_id.get(tg_id)
+        target_user = session.execute(select(User).where(User.username == username)).scalar()
         if not target_user:
             raise HTTPException(status_code=404, detail="User not found")
 

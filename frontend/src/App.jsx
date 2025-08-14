@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import UserTree from './UserTree';
 
 function App() {
-  const [tgId, setTgId] = useState('');
-  const [submitted, setSubmitted] = useState(null);
+  const [tgId, setTgId] = useState(7);
+  const [submitted, setSubmitted] = useState(7);
 
   const onSubmit = (e) => {
     e.preventDefault();
