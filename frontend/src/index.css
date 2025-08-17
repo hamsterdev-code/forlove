@@ -22,3 +22,18 @@ input, button {
 .rd3t-label__title{
   background-color: #fff!important;
 }
+
+.main_text{
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  z-index: 9999999;
+  left: calc( 100vw );
+  top: 0;
+  transform: translateX(-100%);
+
+  p{
+    margin: 5px;
+  }
+}

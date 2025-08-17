@@ -91,7 +91,7 @@ def get_db():
 def build_user_data(session: Session, user: User, users, pays_by_user, refs_map, user_by_tg_id):
     user_pays = pays_by_user.get(user.id, [])
     paid_pays = [p for p in user_pays if p.has_payed]
-
+    for p in paid_pays: print(p.id)
     try:
         last_pay = max([p.created_at for p in paid_pays]) if paid_pays else 0
     except:
@@ -122,15 +122,22 @@ def build_user_data(session: Session, user: User, users, pays_by_user, refs_map,
     total_refs, structure_sum = get_structure_and_sum(user)
 
     tags = []
-    if any(p.product == "clubtraining" for p in user_pays):
+    if any(p.product == "clubtraining" for p in paid_pays):
         tags.append("орг клуба")
-    if any(p.product == "game" for p in user_pays):
+    if any(p.product == "game" for p in paid_pays):
         tags.append("вед игры")
-    if any(p.product == "package" for p in user_pays):
+    if any(p.product == "package" for p in paid_pays):
         tags.append("сетевик")
 
     ref_user = user_by_tg_id.get(user.ref)
     ref_username = ref_user.username if ref_user else None
+    
+    purchases = [
+            f"{p.product} {p.price} {datetime.datetime.utcfromtimestamp(p.created_at).strftime('%Y-%m-%d')}"
+            for p in paid_pays
+    ]
+    if len(purchases) == 0:
+        purchases = ["Ничего"]
 
     return {
         "name": user.full_name,
@@ -148,10 +155,7 @@ def build_user_data(session: Session, user: User, users, pays_by_user, refs_map,
         "ref_level": user.ref_level,
         "total_structure_buys": structure_sum + total_pays,
         "user_tag": " ".join(tags),
-        "purchases": [
-            f"{p.product} {p.price} {datetime.datetime.utcfromtimestamp(p.created_at).strftime('%Y-%m-%d')}"
-            for p in user_pays
-        ]
+        "purchases": purchases
     }
 
 
