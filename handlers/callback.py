@@ -390,9 +390,10 @@ https://rutube.ru/video/3f2b65b609effaec08787b7362423a0e/?r=a
             button2 = types.InlineKeyboardButton("Презентации онлайн", callback_data="event_forlove")
             button3 = types.InlineKeyboardButton("Презентации компаний", callback_data="event_forlove")
             button4 = types.InlineKeyboardButton("Мероприятия партнеров", callback_data="event_forlove")
+            
             markup.add(button, button2, button3, button4, button5, row_width=2)
             
-            bot.send_message(call.from_user.id, """
+            bot.send_photo(call.from_user.id, "https://i.postimg.cc/tCMtRdnq/photo-2025-08-19-14-38-26.jpg", caption="""
 Мы проводим разные форматы мероприятий, чтобы каждый нашел что-то для себя. 
 Выберите, что вас вдохновляет: фестивали, туры, конкурсы или мастер-классы.
 Для более подробной информации напишите: @irrrun
@@ -548,7 +549,6 @@ P.S. Программа и время может меняться по усмо�
             bot.send_message(call.from_user.id, """Инфа про Фестиваль""")
         elif call.data == "_event_conferences":
             bot.send_message(call.from_user.id, """Инфа про Конференции""")
-        
         elif call.data == "event_table":
             today = datetime.now().strftime("%d.%m")
             
