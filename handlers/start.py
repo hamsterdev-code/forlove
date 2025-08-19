@@ -21,7 +21,7 @@ def handle_start_message(bot: TeleBot, chat_id: int):
      
     markup = types.InlineKeyboardMarkup()
     button1 = types.InlineKeyboardButton("О проекте",callback_data="about_project")
-    button2 = types.InlineKeyboardButton("Запись на игру",callback_data="sign_for_game")
+    button2 = types.InlineKeyboardButton("Список клубов знакомств",callback_data="sign_for_game")
     button3 = types.InlineKeyboardButton("Подписка",callback_data="subscribe")
     button4 = types.InlineKeyboardButton("Медиа каналы",callback_data="media_channels")
     button5 = types.InlineKeyboardButton("Наши мероприятия", callback_data="our_events")   
@@ -32,7 +32,7 @@ def handle_start_message(bot: TeleBot, chat_id: int):
     button7 = types.InlineKeyboardButton("Реферальная программа и баланс", callback_data="ref_program")   
 
     markup.add(button7, button8, row_width=1)
-    bot.send_message(chat_id, "Проект 'За любовь' — это движение, которое объединяет людей, стремящихся к осознанным отношениям, личностному росту и вдохновляющему сообществу.\n\nЧерез наши игры, курсы, клубы знакомств и партнерскую программу вы найдете новые возможности для счастья и успеха. Выберите раздел, чтобы узнать больше:", reply_markup=markup)
+    bot.send_photo(chat_id, "https://i.postimg.cc/W1v6Dthv/photo-2025-08-18-18-05-19.jpg", caption="Проект 'За любовь' — это движение, которое объединяет людей, стремящихся к осознанным отношениям, личностному росту и вдохновляющему сообществу.\n\nЧерез наши игры, курсы, клубы знакомств и партнерскую программу вы найдете новые возможности для счастья и успеха. Выберите раздел, чтобы узнать больше:", reply_markup=markup)
     
     
 

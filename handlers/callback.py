@@ -55,24 +55,26 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             markup.add(button1, button2, row_width=1)
             bot.send_message(call.from_user.id, "Настольная игра 'За любовь' — это не просто развлечение, а уникальный способ познакомиться с новыми людьми, укрепить связи и обсудить важные жизненные темы в легкой и непринужденной атмосфере.\n\nИгра подходит для всех — от друзей до семейных пар. Запишитесь на ближайшее мероприятие в вашем городе и откройте для себя мир осознанного общения!", reply_markup=markup)
         elif call.data == "about_game":
-            bot.send_message(call.from_user.id, """
+            bot.send_photo(call.from_user.id, "https://i.postimg.cc/Dz3mfm2p/photo-2025-08-19-14-16-58.jpg", caption="""
 Игра 'За любовь' создана для 1–12 участников и подходит для людей любого возраста, которые хотят лучше понять себя и других. 
 
 В комплект входят карточки с глубокими вопросами, заданиями и сценариями, которые помогают раскрыться, обсудить ценности и выстроить доверие. 
 Это идеальный способ начать свое путешествие в экосистеме 'За любовь'. Узнайте, как игра может изменить ваш взгляд на отношения!
 
-Нажмите кнопку "Наши города", чтобы узнать, где есть наши представительства и организуются игры.""")
+Нажмите кнопку "Наши города", чтобы узнать, где есть наши представительства и организуются игры.
+
+https://rutube.ru/video/4e9613850ede65b96a1560b214d78851/?r=a/""")
         elif call.data == "our_cities":
             cities = session.execute(select(City)).scalars().all()
             markup = types.InlineKeyboardMarkup()
             for city in cities:
                 button = types.InlineKeyboardButton(city.name, callback_data=f"city_{city.id}")
                 markup.add(button)
-            bot.send_message(call.from_user.id, "Мы уже работаем в 12 городах России, и наша сеть растет!\n\nВыберите свой город, чтобы узнать о ближайших играх, познакомиться с организатором и присоединиться к местному сообществу 'За любовь'\n\nВы можете также стать нашим представителем в себя в Городе (даже если в нем мы уже присутствуем). Для этого напишите @irrrun", reply_markup=markup)
+            bot.send_message(call.from_user.id, "Мы уже работаем в 12 городах России, и наша сеть растет!\n\nВыберите свой город, чтобы узнать о ближайших играх, познакомиться с организатором и присоединиться к местному сообществу 'За любовь'", reply_markup=markup)
         elif call.data == "our_feedbacks":
             video = open("assets/Отзывы.mp4", "rb")
             bot.send_video(call.from_user.id, video, timeout=60)
-        elif call.data.startswith("city_"):
+        elif call.data.startswith("_city_"):
             city_id = int(call.data.split("_")[1])
             city = session.execute(select(City).where(City.id == city_id)).scalar()
             markup = types.InlineKeyboardMarkup()
@@ -91,12 +93,14 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             button = types.InlineKeyboardButton("На месяц за 333 ₽", callback_data=f"buy-subscribe_1_333")
             button2 = types.InlineKeyboardButton("На год за 3333 ₽", callback_data=f"buy-subscribe_12_3333")
             markup.add(button,button2, row_width=1)
-            bot.send_message(call.from_user.id, """
+            bot.send_photo(call.from_user.id, "https://i.postimg.cc/nzcFMDN2/photo-2025-08-19-14-18-00.jpg", caption="""
 Подписка 'За любовь' — это ваш ключ к полной экосистеме проекта! За 333 руб./мес. (первый месяц бесплатно) вы получаете доступ к эксклюзивным образовательным курсам по психологии отношений, эмоциональному интеллекту и личностному росту, а также к маркетплейсу, партнерской программе и закрытым мероприятиям. 
 
 Это ваш шанс учиться, общаться и зарабатывать в одном месте. Также вы сможете начать зарабатывать по партнерской программе.
 
-Оформите подписку и начните свое путешествие к гармонии""", reply_markup=markup)
+Оформите подписку и начните свое путешествие к гармонии
+
+https://rutube.ru/video/3641a629d7c72c037332444530a1636b/?r=a/""", reply_markup=markup)
         elif call.data.startswith("buy-subscribe"):
             # реализовать создание платежа
             pay_link = 'https://example.com'
@@ -176,8 +180,8 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             markup.add(button, row_width=1)
             
             
-            bot.send_message(call.from_user.id, f"""
-Благодарим. Теперь вы можете зарабатывать с реферальной программы. Подробнее о ней вы можете узнать в разделе бота "Реферальная программа и баланс"
+            bot.send_photo(call.from_user.id, "https://i.postimg.cc/MTsvf8Sx/subscribe-img.png", caption=f"""
+Благодарим за подписку. У вас активирован статус личная активность в течении 30 суток. Для получения бонусов партнерской программы и бонусных материалов платформы (По окончанию оплаченного срока действия подписки все модули будут автоматически отключены. Рекомендуем оплатить подписку на 12 месяцев со скидкой стоимостью 3333 рубля)
                              """, reply_markup=markup)
         elif call.data == "_subscribe-send_forlove":
             bot.send_message(call.from_user.id, "Для получения реквизитов напишите: @RodionRa")
@@ -192,25 +196,28 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             #button = types.InlineKeyboardButton("Производитель/поставщик за 15 555 ₽", callback_data=f"buy-product_game_55555")
             
             button2 = types.InlineKeyboardButton("Организатор Клуба знакомств за 79999 ₽", callback_data=f"buy-product_clubtraining_79999")
+            button3 = types.InlineKeyboardButton("Управляющий Города за 333333 ₽", callback_data=f"buy-product_citymanager_333333")
             
-            markup.add(button,button2, row_width=1)
+            markup.add(button,button2, button3, row_width=1)
             
             if user.ref_level == 1: 
-                button3 = types.InlineKeyboardButton("Пакет за 5000 ₽", callback_data=f"buy-product_package_5000")
+                button3 = types.InlineKeyboardButton("Пакет партнерской программы за 5000 ₽", callback_data=f"buy-product_package_5000")
                 markup.add(button3)
             if user.ref_level == 2: 
-                button4 = types.InlineKeyboardButton("Пакет за 15000 ₽", callback_data=f"buy-product_package_15000")
+                button4 = types.InlineKeyboardButton("Пакет партнерской программы за 15000 ₽", callback_data=f"buy-product_package_15000")
                 markup.add(button4)
             if user.ref_level == 3:
-                button5 = types.InlineKeyboardButton("Пакет за 25000 ₽", callback_data=f"buy-product_package_25000")
+                button5 = types.InlineKeyboardButton("Пакет партнерской программы за 25000 ₽", callback_data=f"buy-product_package_25000")
                 markup.add(button5)
             if user.ref_level == 4:
-                button6 = types.InlineKeyboardButton("Пакет за 45000 ₽", callback_data=f"buy-product_package_45000")
+                button6 = types.InlineKeyboardButton("Пакет партнерской программы за 45000 ₽", callback_data=f"buy-product_package_45000")
                 markup.add(button6)
             if user.ref_level == 5: 
-                button7 = types.InlineKeyboardButton("Пакет за 100000 ₽", callback_data=f"buy-product_package_100000")
+                button7 = types.InlineKeyboardButton("Пакет партнерской программы за 100000 ₽", callback_data=f"buy-product_package_100000")
                 markup.add(button7)
 
+            button8 = types.InlineKeyboardButton("Пакет партнерской программы оптом (50% скидка)", callback_data="buy-product_allpackage_95000")
+            markup.add(button8)
             
             bot.send_message(call.from_user.id, """
 Хотите зарабатывать, делясь ценностями 'За любовь'?
@@ -221,7 +228,6 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
         elif call.data.startswith("buy-product"):
             name = call.data.split("_")[1]
             price = call.data.split("_")[2]
-            pay_link = 'https://example.com'
             
             pay_metadata = PayMetadata(
                 user_id = user.id,
@@ -305,23 +311,58 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
 Вы будете получать доход от проведения игр и бонусы по партнерской программе.
 Стоимость: 55.555 руб.
 Прогназируемая окупаемость: 1-2 месяца.
+
+https://rutube.ru/video/04c84f87f4dd9de603169e98aa5c9f41/?r=a
                 """
             elif name == "clubtraining":
                 image_url = "https://iimg.su/s/17/tAG14iNFiiiGpLTVv4o9Ip07onLPoN3IQ6wMrinK.png"
                 text = """
-ОБУЧАЮЩИЙ КУРС "РУКОВОДИТЕЛЬ ГОРОДСКОГО КЛУБА ЗНАКОМСТВ"
+ОБУЧАЮЩИЙ КУРС "ОРГАНИЗАТОР КЛУБА ОСОЗНАННЫХ ЗНАКОМСТВ"
 
 Мы присылаем вам комплект настольной игры, с ним вы сможете проводить игры в своем городе и зарабатывать на этом. Инструкции и базовое обучение прилагается.
 Также вы сможете организовывать мероприятия, туры, фестивали от нашей компании.
 Вы будете получать доход от проведения игр и других мероприятий, и бонусы по партнерской программе.
 Стоимость: 79.999 руб.
 Прогназируемая окупаемость: 1-2 месяца.                
+
+https://rutube.ru/video/3f2b65b609effaec08787b7362423a0e/?r=a
 """
             elif name == "package":
                 text = """
 Возможность расширить заработок с реферальной программы
 """
                 image_url = None
+            elif name == "allpackage":
+                text = """
+Покупка всех пакетов оптом (50% скидка) для заработка с реферальной программы
+"""
+                image_url = None
+            elif name == "citymanager":
+                image_url = None
+                text = """
+Франшиза позволит вам:
+
+💚БЫТЬ всегда в Первой Строке списка клубов знакомств по вашему городу
+
+💚ИМЕТЬ бесконечную глубину по партнерской программе
+
+💚ПРОВОДИТЬ ИГРУ ЗАЛЮБОВЬ В ЛЮБОЙ ТОЧКЕ МИРА ОФЛАЙН
+
+💚ОБУЧАТЬ ИГРЕ ЗАЛЮБОВЬ
+
+💚ОРГАНИЗОВЫВАТЬ 2-3 дневные туры в СПБ /ПРИСОЕДИНЯТЬСЯ к существующим мероприятиям 
+
+💚ПОДКЛЮЧАТЬ сообщества к проекту ЗАЛЮБОВЬ: танцевальные клубы, йога центры, ЗОЖ, любителей животных, яхт клубы, авто-спорт клубы, тренинги по личностному росту, нетворкинг-сообщества, брачные агенства по организации свадеб и все направления какие есть, направленные на развитие.
+
+💚РАЗМЕЩАТЬ свои услуги на маркетплейсе платформы
+
+💚ПОЛУЧАТЬ скидки и бонусы от всех уча,тников международного проекта ЗАЛЮБОВЬ
+
+💚ДРУЖИТЬ С АНГЕЛАМИ НА ЗЕМЛЕ ПО ВСЕМУ МИРУ
+
+💚ПОМОГАТЬ ЛЮДЯМ СОЕДИНЯТЬ СЕРДЦА 
+
+💚ДАРИТЬ СВОЮ ЛЮБОВЬ РАДИ ЖИЗНИ НА ЗЕМЛЕ ВСЕГО ЧЕЛОВЕЧЕСТВА"""            
             if image_url:
                 bot.send_photo(call.from_user.id, image_url, text, reply_markup=markup)
             else:
@@ -333,10 +374,7 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
         elif call.data == "our_events":
             markup = types.InlineKeyboardMarkup()    
             button = types.InlineKeyboardButton("Форматы мероприятий", callback_data="event_formats")
-            button2 = types.InlineKeyboardButton("Расписание", callback_data="event_table")
-            button3 = types.InlineKeyboardButton("Стать гидом", callback_data="become_guide")
-            button4 = types.InlineKeyboardButton("Организовать мероприятия", callback_data="organize_events")
-            markup.add(button, button2, button3, button4, row_width=1)
+            markup.add(button, row_width=1)
             
             bot.send_message(call.from_user.id, """
 Проект 'За любовь' — это не только игры, но и яркие оффлайн-мероприятия: фестивали знакомств, туры, конкурсы красоты и вдохновляющие встречи. 
@@ -348,11 +386,10 @@ def handler_callback(bot: TeleBot, call: types.CallbackQuery):
             bot.send_message(call.message.chat.id, "Если вы хотите организовать свое мероприятия при нашей поддержке, напишите: @irrrun")
         elif call.data == "event_formats":
             markup = types.InlineKeyboardMarkup()    
-            button = types.InlineKeyboardButton("Туры", callback_data="event_tours")
-            button2 = types.InlineKeyboardButton("Фестивали", callback_data="event_forlove")
-            button3 = types.InlineKeyboardButton("Конкурсы красоты", callback_data="event_forlove")
-            button4 = types.InlineKeyboardButton("Ретриты", callback_data="event_forlove")
-            button5 = types.InlineKeyboardButton("Региональные встречи", callback_data="event_forlove")
+            button = types.InlineKeyboardButton("Туры знакомств", callback_data="event_tours")
+            button2 = types.InlineKeyboardButton("Презентации онлайн", callback_data="event_forlove")
+            button3 = types.InlineKeyboardButton("Презентации компаний", callback_data="event_forlove")
+            button4 = types.InlineKeyboardButton("Мероприятия партнеров", callback_data="event_forlove")
             markup.add(button, button2, button3, button4, button5, row_width=2)
             
             bot.send_message(call.from_user.id, """
@@ -621,6 +658,7 @@ P.S. Программа и время может меняться по усмо�
             bot.send_document(call.from_user.id, pdf_file)
             xlsx_file = open("assets/Калькулятор ПП За любовь.xlsx", "rb")
             bot.send_document(call.from_user.id, xlsx_file)
+            bot.send_message(call.message.chat.id, "https://rutube.ru/video/4a15e34316ff713ed345842df1134729/?r=a/")
         elif call.data == "change_sponsor":
             bot.send_message(call.from_user.id, f"Напишите ник под кого вы хотите перейти (в формате @ник)")
             bot.register_next_step_handler(call.message, change_sponsor_1, bot)
