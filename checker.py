@@ -77,9 +77,9 @@ def ref_handler(session: Session, user: User, pay_metadata: PayMetadata):
             user_ref.inner_balance += inner_pay_moneys # начисление денег
             try:
                 bot.send_message(user_ref.tg_id, f"""                   
-    Приглашенный вами пользователь @{user.username} купил продукт
-    Сумма: {pay_metadata.price} ₽
-    Вы получили: {pay_moneys} ₽""")
+Приглашенный вами пользователь @{user.username} купил продукт
+Сумма: {pay_metadata.price} ₽
+Вы получили: {pay_moneys} ₽""")
             except: pass
         else:
             admin_user.inner_balance += inner_pay_moneys # начисление денег
@@ -167,7 +167,7 @@ def checker():
                     bot.send_message(user.tg_id, "Вы оплатили обучающий курс «Организатор клуба знакомств».\n\nВам активирован подарок: подписка на 365 дней и 4 бизнес-пакета, которые открывают 2-9 уровень партнерской программы.\nДля получения дальнейших инструкций напишите @RodionRa")
                 if pay_metadata.product == "game":
                     bot.send_message(ADMIN_CHAT_ID, f"Пользователь @{user.username} купил игру на {pay_metadata.price} ₽", message_thread_id=3)
-                    bot.send_message(user.tg_id, "Поздравляем, вы приобрели комплект игры. Перейдите в канал «ГОСПОДА ВЕДУЩИЕ» и получите бесплатно обучение и онлайн поддержку:\n\nt.me/+529rZolW6fJmNmYy")
+                    bot.send_message(user.tg_id, "Поздравляем, вы приобрели комплект игры. Перейдите в канал «ГОСПОДА ВЕДУЩИЕ» и получите бесплатно обучение и онлайн поддержку:\n\nhttps://t.me/+1-Vj-ec0BOw1NTYy")
                 bot.send_message(ADMIN_ACCOUNT, f"""
     Пользователь @{user.username} купил {"подписку" if pay_metadata.product.startswith("subscribe") else "продукт"} на {pay_metadata} рублей
                                     """)
