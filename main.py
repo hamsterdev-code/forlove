@@ -1,6 +1,7 @@
 from typing import List, Dict, Any
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel
 from sqlalchemy import create_engine, text, select, Column, Integer, String, BigInteger, Boolean
 from sqlalchemy.orm import sessionmaker, Session, DeclarativeBase
@@ -238,3 +239,12 @@ def get_single_user(username: str):
                 refs_map.setdefault(u.ref, []).append(u)
 
         return build_user_data(session, target_user, users, pays_by_user, refs_map, user_by_tg_id)
+    
+@app.get("/")
+def get_index():
+    file_inner = open("./build/index.html", 'r').read()
+    return HTMLResponse(content=file_inner)
+
+@app.get("/assets/{file}")
+def get_asset_file(file):
+    return FileResponse(path=f"./build/assets/{file}")
