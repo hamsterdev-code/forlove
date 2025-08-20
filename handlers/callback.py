@@ -94,7 +94,8 @@ https://rutube.ru/video/4e9613850ede65b96a1560b214d78851/?r=a/""")
             button = types.InlineKeyboardButton("На месяц за 333 ₽", callback_data=f"buy-subscribe_1_333")
             button2 = types.InlineKeyboardButton("На год за 3333 ₽", callback_data=f"buy-subscribe_12_3333")
             markup.add(button,button2, row_width=1)
-            bot.send_photo(call.from_user.id, "https://i.postimg.cc/nzcFMDN2/photo-2025-08-19-14-18-00.jpg", caption="""
+            video = open("assets/subscribe.mp4", 'rb')
+            bot.send_video(call.from_user.id, video, duration=10, caption="""
 Подписка 'За любовь' — это ваш ключ к полной экосистеме проекта! За 333 руб./мес. (первый месяц бесплатно) вы получаете доступ к эксклюзивным образовательным курсам по психологии отношений, эмоциональному интеллекту и личностному росту, а также к маркетплейсу, партнерской программе и закрытым мероприятиям. 
 
 Это ваш шанс учиться, общаться и зарабатывать в одном месте. Также вы сможете начать зарабатывать по партнерской программе.
