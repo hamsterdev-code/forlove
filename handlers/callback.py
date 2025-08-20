@@ -644,7 +644,7 @@ P.S. Программа и время может меняться по усмо�
                 users = get_list_refs(session, users)
             print(line_users)
             markup = types.InlineKeyboardMarkup()
-            markup.add(types.InlineKeyboardButton("Открыть дерево", f"https://hamsterdev-code-forlove-a23b.twc1.net?{call.message.from_user.id}"))
+            markup.add(types.InlineKeyboardButton("Открыть дерево", f"https://hamsterdev-code-forlove-a23b.twc1.net?{user.tg_id}"))
             bot.send_message(call.from_user.id, f"""
 Посмотрите, как растет ваша команда! Здесь вы можете увидеть участников вашей первой линии, чтобы отслеживать свой прогресс. Создавайте сообщество единомышленников и зарабатывайте вместе!
 
