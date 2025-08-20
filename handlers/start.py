@@ -43,16 +43,16 @@ def handler_start(bot: TeleBot, message: types.Message):
         
         if " " in message.text:
             go_code = message.text.split()[1]
-            if go_code == "pay_150" and user != None:
+            if go_code == "pay_199" and user != None:
                 with Session(engine) as session:
                 
                     idempotence_key = str(uuid.uuid4())
                     
                     pay_metadata = PayMetadata(
                         user_id = user.id,
-                        price = 150,
+                        price = 199,
                         product = "poster",
-                        procent_balance = 0,
+                        procent_balance = 10,
                         inner_balance = 0
                     )
                     session.add(pay_metadata)
