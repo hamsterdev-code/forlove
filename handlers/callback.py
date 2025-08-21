@@ -50,6 +50,10 @@ https://rutube.ru/video/3641a629d7c72c037332444530a1636b/?r=a/
     """, reply_markup=markup)
         elif call.data == "company_media":
             bot.send_document(call.message.chat.id, open("assets/company_medias/За любовь презентация.pdf", 'rb'), caption="Презентация. Общая\n\nhttps://rutube.ru/video/3641a629d7c72c037332444530a1636b/?r=a/")
+            bot.send_document(call.message.chat.id, open("assets/company_medias/Социальный_предприниматель_1_06_2025.pptx", 'rb'), caption="Презентация Социальный предприниматель\n\nhttps://rutube.ru/video/651413f1de8d4238e9e8fad6d5d13189/?r=a/")
+            bot.send_document(call.message.chat.id, open("assets/company_medias/Клуб знакомств.pptx", 'rb'), caption="Организатор клуба знакомств\n\nhttps://rutube.ru/video/408550ceccd2c78daf0594ffd0b99ae0/?r=a/")
+            bot.send_document(call.message.chat.id, open("assets/company_medias/ПартнеркаЗаЛюбовь.pdf", 'rb'), caption="Партнеская программа\n\nhttps://rutube.ru/video/4a15e34316ff713ed345842df1134729/?r=a/")
+            bot.send_document(call.message.chat.id, open("assets/company_medias/Сертификат За Любовь.pptx", 'rb'), caption="ПОДАРОЧНЫЙ СЕРТИФИКАТ За любовь\n\nhttps://rutube.ru/video/707d181398de541a82184a5d08eacb3e/?r=a/")
         
         # ГОРОДА
         elif call.data == "sign_for_game":
@@ -655,13 +659,15 @@ P.S. Программа и время может меняться по усмо�
 {nicks}   
                              """, reply_markup=markup)
         elif call.data == "return_balance":
+            markup = types.InlineKeyboardMarkup()
+            markup.add(types.InlineKeyboardButton("Открыть тех поддержку", callback_data="support"))
             bot.send_message(call.from_user.id, """
 Инструкция на вывод денежных средств:
 
 1. Ваш статус должен соответствовать ИП (ООО).
 2. Заключить агенский договор через тех поддержку
 3. Подать заявку на вывод (30000 бонусов) 
-                            """)
+                            """, reply_markup=markup)
             bot.send_message(ADMIN_CHAT_ID, f"Заявка на вывод средств от @{user.username} (его баланс - {user.balance} ₽)", message_thread_id=6)
         elif call.data == "transfer_balance":
             bot.send_message(call.from_user.id, "Вы можете перевести средства с бонусного баланса. Напишите ник кому вы хотите перевести (в формате @ник)")
@@ -682,7 +688,7 @@ P.S. Программа и время может меняться по усмо�
             markup.add(button)
             bot.send_photo(call.from_user.id, "https://i.postimg.cc/fWvQcSzh/photo-2025-08-20-16-36-49.jpg", "У вас есть вопросы или нужна помощь? Мы всегда рядом!\n\nНапишите нам, расскажите о вашей ситуации или задайте вопрос, и наша команда поддержки ответит в кратчайшие сроки. Если хотите, прикрепите фото, чтобы мы лучше поняли ваш запрос. Давайте сделаем ваш опыт с 'За любовь' незабываемым!", reply_markup=markup)
         elif call.data == "support_message":
-            bot.send_message(call.from_user.id, "Отправьте сообщение в поддержку")
+            bot.send_message(call.from_user.id, "Отправьте сообщение в поддержку. Обращение рассматривается в течение 24 часов в рабочие дни")
             bot.register_next_step_handler(call.message, support_message, bot)
             
     bot.answer_callback_query(call.id)  # Теперь у вас открылись все возможности нашей платформы      
