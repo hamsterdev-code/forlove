@@ -23,7 +23,7 @@ def handle_start_message(bot: TeleBot, chat_id: int):
     button1 = types.InlineKeyboardButton("О проекте",callback_data="about_project")
     button2 = types.InlineKeyboardButton("Список клубов знакомств",callback_data="sign_for_game")
     button3 = types.InlineKeyboardButton("Подписка",callback_data="subscribe")
-    button4 = types.InlineKeyboardButton("Медиа каналы",callback_data="media_channels")
+    button4 = types.InlineKeyboardButton("Медиа / материалы",callback_data="media_channels")
     button5 = types.InlineKeyboardButton("Наши мероприятия", callback_data="our_events")   
     button6 = types.InlineKeyboardButton("Наши продукты", callback_data="our_products")   
     
