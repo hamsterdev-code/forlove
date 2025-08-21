@@ -62,7 +62,7 @@ def handler_start(bot: TeleBot, message: types.Message):
                         {
                             "id": idempotence_key,
                             "amount": {
-                                "value": 150,
+                                "value": 199,
                                 "currency": "RUB"
                             },
                             "confirmation": {
@@ -86,7 +86,7 @@ def handler_start(bot: TeleBot, message: types.Message):
                                         "description": "Подписка платформы",
                                         "quantity": "1.00",
                                         "amount": {
-                                            "value": 150,
+                                            "value": 199,
                                             "currency": "RUB"
                                         },
                                         "vat_code": "2",
