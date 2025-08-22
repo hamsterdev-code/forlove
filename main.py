@@ -92,7 +92,7 @@ def get_db():
 def build_user_data(session: Session, user: User, users, pays_by_user, refs_map, user_by_tg_id):
     user_pays = pays_by_user.get(user.id, [])
     paid_pays = [p for p in user_pays if p.has_payed]
-    for p in paid_pays: print(p.id)
+
     try:
         last_pay = max([p.created_at for p in paid_pays]) if paid_pays else 0
     except:
@@ -122,6 +122,7 @@ def build_user_data(session: Session, user: User, users, pays_by_user, refs_map,
 
     total_refs, structure_sum = get_structure_and_sum(user)
 
+    # --- Метки ---
     tags = []
     if any(p.product == "clubtraining" for p in paid_pays):
         tags.append("орг клуба")
@@ -130,15 +131,23 @@ def build_user_data(session: Session, user: User, users, pays_by_user, refs_map,
     if any(p.product == "package" for p in paid_pays):
         tags.append("сетевик")
 
+    # --- Пригласитель ---
     ref_user = user_by_tg_id.get(user.ref)
     ref_username = ref_user.username if ref_user else None
-    
-    purchases = [
-            f"{p.product} {p.price} {datetime.datetime.utcfromtimestamp(p.created_at).strftime('%Y-%m-%d')}"
-            for p in paid_pays
-    ]
-    if len(purchases) == 0:
-        purchases = ["Ничего"]
+
+    # --- Подписка ---
+    sub_pays = [p for p in paid_pays if p.product in ("subscribe-1", "subscribe-12")]
+    has_subscribe = False
+    if sub_pays:
+        last_sub = max(sub_pays, key=lambda p: p.created_at)
+        if last_sub.product == "subscribe-1":
+            end_date = datetime.datetime.utcfromtimestamp(last_sub.created_at) + datetime.timedelta(days=30)
+        elif last_sub.product == "subscribe-12":
+            end_date = datetime.datetime.utcfromtimestamp(last_sub.created_at) + datetime.timedelta(days=365)
+        else:
+            end_date = datetime.datetime.utcfromtimestamp(0)
+        if end_date > datetime.datetime.utcnow():
+            has_subscribe = True
 
     return {
         "name": user.full_name,
@@ -156,7 +165,11 @@ def build_user_data(session: Session, user: User, users, pays_by_user, refs_map,
         "ref_level": user.ref_level,
         "total_structure_buys": structure_sum + total_pays,
         "user_tag": " ".join(tags),
-        "purchases": purchases
+        "purchases": [
+            f"{p.product} {p.price} {datetime.datetime.utcfromtimestamp(p.created_at).strftime('%Y-%m-%d')}"
+            for p in paid_pays
+        ],
+        "has_subscribe": has_subscribe
     }
 
 

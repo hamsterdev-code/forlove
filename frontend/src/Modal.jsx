@@ -51,6 +51,7 @@ export default function Modal({ username, onClose }) {
         <p style={{ margin: 0, fontSize: 16, }}><strong>Оборот стркутуры:</strong> {userData.total_structure_buys}</p>
         <p style={{ margin: 0, fontSize: 16, }}><strong>Дата рег.:</strong> {userData.reg_date}</p>
         <p style={{ margin: 0, fontSize: 16, }}><strong>Дата последней покупки:</strong> {userData.last_pay}</p>
+        <p style={{ margin: 0, fontSize: 16, }}><strong>Уровень пакета:</strong> {{1: "Обычный", 2: "Любитель", 3: "Профессионал", 4: "Наставник", 5: "Куратор", 6: "Амбассадор"}[userData.ref_level]}</p>
         <p style={{ margin: 0, fontSize: 16, }}><strong>Покупки:</strong>
           <select name="pets" id="pet-select">
             {userData.purchases.map((v)=>(
