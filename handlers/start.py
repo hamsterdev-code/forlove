@@ -12,7 +12,12 @@ SHOP_ID = 1124758
 
 Configuration.configure(SHOP_ID, SECRET_API)
 
-def handle_start_message(bot: TeleBot, chat_id: int):
+def handle_start_message(bot: TeleBot, chat_id: int, has_new_message = False):
+    if has_new_message:
+        bot.send_message(chat_id, """
+<a href="http://user-agreement.integrocore.com/forlove2">Пользовательское соглашение</a>
+<a href="http://privacy-policy.integrocore.com/forlove1">Политика конфиденциальности</a>
+                         """, parse_mode='html')
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     item1 = types.KeyboardButton('На главную')
     markup.add(item1)
@@ -190,7 +195,7 @@ def handle_phone(message: types.Message, bot: TeleBot):
                 user.has_ended = True
                 session.commit()
                 bot.send_message(message.chat.id, "Вы зарегистрировались в проекте.\n\nПоздравляем с получением бесплатной подписки на 30 суток.Вам Активирован 1 уровень партнерской программы.\n\nПереходите в наш канал: @za_lyubov_igra")
-                handle_start_message(bot, message.chat.id)
+                handle_start_message(bot, message.chat.id, has_new_message=True)
     except:
         if message.text.startswith("8") or message.text.startswith("+7"):
             phone_number = message.text
@@ -201,7 +206,7 @@ def handle_phone(message: types.Message, bot: TeleBot):
                     user.has_ended = True
                     session.commit()
                     bot.send_message(message.chat.id, "Вы зарегистрировались в проекте.\n\nПоздравляем с получением бесплатной подписки на 30 суток.Вам Активирован 1 уровень партнерской программы.\n\nПереходите в наш канал: @za_lyubov_igra")
-                    handle_start_message(bot, message.chat.id)
+                    handle_start_message(bot, message.chat.id, has_new_message=True)
                     return
         bot.send_message(message.chat.id, "Номер телефона не получен")
         keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
